@@ -1,0 +1,36 @@
+﻿@model BestReg.Models.UserDetailsViewModel
+
+@{
+    ViewData["Title"] = "User Details";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title text-center">User Details</h2>
+
+                    <dl class="row">
+                        <dt class="col-sm-4">First Name</dt>
+                        <dd class="col-sm-8">@Model.FirstName</dd>
+
+                        <dt class="col-sm-4">Last Name</dt>
+                        <dd class="col-sm-8">@Model.LastName</dd>
+
+                        <dt class="col-sm-4">Email</dt>
+                        <dd class="col-sm-8">@Model.Email</dd>
+
+                        <dt class="col-sm-4">Role</dt>
+                        <dd class="col-sm-8">@Model.Role</dd>
+
+                        <dt class="col-sm-4">ID Number</dt>
+                        <dd class="col-sm-8">@Model.IDNumber</dd>
+                    </dl>
+
+                    <a href="@Url.Action("CheckInUser", new { userId = Model.UserId })" class="btn btn-primary w-100">Check In User</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

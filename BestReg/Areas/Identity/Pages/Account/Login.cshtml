@@ -1,0 +1,85 @@
+﻿@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Account Login";
+}
+
+<div class="limiter">
+    <div class="container-login100">
+        <div class="wrap-login100">
+            <form id="account" method="post" class="login100-form validate-form">
+                <span class="login100-form-title p-b-26">
+                    @ViewData["Title"]
+                </span>
+                <span class="login100-form-title p-b-48">
+                    <i class="zmdi zmdi-font">
+                        <img src="/images/user.png" style="width:100px;" alt="Admin Icon">
+                    </i>
+                </span>
+
+                <!-- Email Field with Label -->
+                <div class="wrap-input100 validate-input" data-validate="Valid email is: a@b.c">
+                    <label asp-for="Input.Email" class="form-label">Email</label>
+                    <input asp-for="Input.Email" class="input100" autocomplete="username" aria-required="true" />
+                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                </div>
+
+                <!-- Password Field with Label -->
+                <div class="wrap-input100 validate-input" data-validate="Enter password">
+                    <label asp-for="Input.Password" class="form-label">Password</label>
+                    <span class="btn-show-pass">
+                        <i class="zmdi zmdi-eye"></i>
+                    </span>
+                    <input asp-for="Input.Password" class="input100" autocomplete="current-password" aria-required="true" />
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+
+                <!-- Remember Me Checkbox -->
+                <div class="checkbox mb-3">
+                    <label asp-for="Input.RememberMe" class="form-label">
+                        <input class="form-check-input" asp-for="Input.RememberMe" />
+                        Remember me
+                    </label>
+                </div>
+
+                <!-- Login Button -->
+                <div class="container-login100-form-btn">
+                    <div class="wrap-login100-form-btn">
+                        <div class="login100-form-bgbtn"></div>
+                        <button id="login-submit" type="submit" class="login100-form-btn">
+                            Log in
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Additional Links -->
+                <div class="text-center p-t-115">
+                    <a class="txt2" asp-page="./ForgotPassword" asp-route-returnUrl="@Model.ReturnUrl">
+                        Forgot Password?
+                    </a>
+                </div>
+                <div class="text-center p-t-115">
+                    <span class="txt1">
+                        Don’t have an account?
+                    </span>
+                    <a class="txt2" asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">
+                        Sign Up
+                    </a>
+                </div>
+                <div class="text-center p-t-115">
+                    <a class="txt2" asp-page="./ResendEmailConfirmation" asp-route-returnUrl="@Model.ReturnUrl">
+                        Resend email confirmation
+                    </a>
+                </div>
+
+                <!-- Validation Summary -->
+                <div asp-validation-summary="ModelOnly" class="text-danger text-center" role="alert"></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

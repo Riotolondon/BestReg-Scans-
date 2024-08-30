@@ -1,0 +1,19 @@
+﻿@* @{
+    ViewData["Title"] = "Scan Off";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div>
+    <h3>Scan the QR Code to mark the learner as off the bus:</h3>
+    <form asp-action="ScanOff" method="post">
+        <div class="form-group">
+            <label for="qrCodeInput">QR Code</label>
+            <input type="text" id="qrCodeInput" name="qrCode" class="form-control" placeholder="Scan QR Code here..." />
+        </div>
+        <button type="submit" class="btn btn-danger mt-3">Submit</button>
+    </form>
+</div>
+ *@
+
+<h3>This will be a scanner itself</h3>

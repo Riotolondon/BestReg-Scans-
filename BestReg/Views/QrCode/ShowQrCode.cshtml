@@ -1,0 +1,16 @@
+﻿@{
+    ViewData["Title"] = "Your QR Code";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if (string.IsNullOrEmpty(ViewBag.QrCodeBase64))
+{
+    <p>No QR code available.</p>
+}
+else
+{
+    <img src="data:image/png;base64,@ViewBag.QrCodeBase64" alt="QR Code" />
+    <br />
+    <a asp-action="DownloadQrCode" class="btn btn-primary mt-3">Download QR Code</a>
+}

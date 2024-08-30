@@ -1,0 +1,27 @@
+﻿@{
+    ViewData["Title"] = "Parent Dashboard";
+}
+<h2>@ViewData["Title"]</h2>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4 box-shadow">
+                <div class="card-body">
+                    <h5 class="card-title">View QR Code</h5>
+                    <p class="card-text">View and download the QR code associated with your child.</p>
+                    <a href="@Url.Action("ShowQrCode", "QrCode")" class="btn btn-primary">View QR Code</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4 box-shadow">
+                <div class="card-body">
+                    <h5 class="card-title">View Child's Past Data</h5>
+                    <p class="card-text">Review the past data associated with your child.</p>
+                    <a href="@Url.Action("ViewChildData", "Parent")" class="btn btn-primary">View Data</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

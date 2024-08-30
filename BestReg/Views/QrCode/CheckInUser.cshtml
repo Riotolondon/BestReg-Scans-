@@ -1,0 +1,32 @@
+﻿@model BestReg.Models.CheckInConfirmationViewModel
+
+@{
+    ViewData["Title"] = "Check In User";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title text-center">Check In Confirmation</h2>
+
+                    <p class="text-center">Confirm the check-in for the following student:</p>
+
+                    <dl class="row">
+                        <dt class="col-sm-4">Name</dt>
+                        <dd class="col-sm-8">@Model.UserName</dd>
+
+                        <dt class="col-sm-4">Check-In Time</dt>
+                        <dd class="col-sm-8">@Model.CheckInTime.ToString("f")</dd>
+                    </dl>
+
+                    <form asp-action="ConfirmCheckIn" method="post">
+                        <input type="hidden" name="userId" value="@Model.UserId" />
+                        <button type="submit" class="btn btn-primary w-100">Confirm Check-In</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
