@@ -108,7 +108,7 @@ namespace BestReg.Areas.Identity.Pages.Account
                     FirstName = Input.FirstName,
                     LastName = Input.LastName,
                     IDNumber = Input.IDNumber,
-                    EmailConfirmed = true // Marking email confirmation true for now.
+                    EmailConfirmed = true // Marking email confirmation true for now since email confirmation is giving me problems.
                 };
 
                 var result = await _userManager.CreateAsync(user, Input.Password);
@@ -126,7 +126,7 @@ namespace BestReg.Areas.Identity.Pages.Account
                         }
 
                         // Additional logic based on role selection (optional)
-                        if (Input.SelectedRole == "Parent")
+                        if (Input.SelectedRole == "Student")
                         {
                             var qrCodeBytes = _emailService.GenerateQrCode(user.IDNumber);
                             user.QrCodeBase64 = Convert.ToBase64String(qrCodeBytes);

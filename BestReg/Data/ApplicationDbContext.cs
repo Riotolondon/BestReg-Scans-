@@ -11,7 +11,7 @@ namespace BestReg.Data
         }
 
         // Entities
-        public DbSet<CheckInRecord> CheckInRecords { get; set; }
+        //public DbSet<CheckInRecord> CheckInRecords { get; set; }
         public DbSet<AttendanceRecord> AttendanceRecords { get; set; }
 
     }

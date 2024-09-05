@@ -75,6 +75,8 @@ public class EmailService : IEmailService
         return await SendEmailAsync(email, subject, body);
     }
 
+
+
     public byte[] GenerateQrCode(string text)
     {
         var qrCodeWriter = new BarcodeWriterPixelData

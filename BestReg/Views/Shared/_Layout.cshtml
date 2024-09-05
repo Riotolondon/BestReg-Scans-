@@ -35,28 +35,26 @@
 
                         @if (SignInManager.IsSignedIn(User))
                         {
-                            var user = await UserManager.GetUserAsync(User);
-                            var roles = await UserManager.GetRolesAsync(user);
-
-                            if (roles.Contains("Admin"))
+                            var roles = ViewBag.Roles as IList<string>;
+                            if (roles != null && roles.Contains("Admin"))
                             {
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Index">Admin Dashboard</a>
                                 </li>
                             }
-                            else if (roles.Contains("Student"))
+                            else if (roles != null && roles.Contains("Student"))
                             {
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-controller="QrCode" asp-action="ShowQrCode">My QR Code</a>
                                 </li>
                             }
-                            else if (roles.Contains("Parent"))
+                            else if (roles != null && roles.Contains("Parent"))
                             {
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-controller="QrCode" asp-action="ShowQrCode">My Child's QR Code</a>
                                 </li>
                             }
-                            else if (roles.Contains("BusDriver") || roles.Contains("SchoolSecurity"))
+                            else if (roles != null && (roles.Contains("BusDriver") || roles.Contains("SchoolSecurity")))
                             {
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-controller="QrCode" asp-action="ScanQRCode">Scan QR Code</a>

@@ -32,8 +32,8 @@ namespace BestReg.Data
         "Admin",
         "SchoolSecurity",
         "BusDriver",
-        "Student",
-        "Parent"
+        "Student"
+      
     };
 
             foreach (var roleName in roles)

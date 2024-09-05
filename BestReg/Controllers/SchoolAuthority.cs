@@ -14,13 +14,13 @@ namespace BestReg.Controllers
         public IActionResult ScanIn()
         {
             // Logic for scanning learners in
-            return View();
+            return RedirectToAction("ScanQRCode", "QrCode"); ;
         }
 
         public IActionResult ScanOut()
         {
             // Logic for scanning learners out
-            return View();
+            return RedirectToAction("ScanQRCode", "QrCode");
         }
     }
 }

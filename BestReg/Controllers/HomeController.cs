@@ -1,32 +1,27 @@
-using BestReg.Models;
+using BestReg.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 
-namespace BestReg.Controllers
+public class HomeController : Controller
 {
-    public class HomeController : Controller
+    private readonly UserManager<ApplicationUser> _userManager;
+
+    public HomeController(UserManager<ApplicationUser> userManager)
     {
-        private readonly ILogger<HomeController> _logger;
+        _userManager = userManager;
+    }
 
-        public HomeController(ILogger<HomeController> logger)
+    public async Task<IActionResult> Index()
+    {
+        if (User.Identity.IsAuthenticated)
         {
-            _logger = logger;
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                ViewBag.Roles = roles;
+            }
         }
-
-        public IActionResult Index()
-        {
-            return View();
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
+        return View();
     }
 }
