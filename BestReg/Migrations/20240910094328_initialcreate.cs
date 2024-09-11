@@ -55,22 +55,6 @@ namespace BestReg.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AttendanceRecords",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AttendanceDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CheckInTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CheckOutTime = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AttendanceRecords", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -176,6 +160,32 @@ namespace BestReg.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "AttendanceRecords",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    AttendanceDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    BusCheckInHome = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    BusCheckOutSchool = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    SchoolCheckIn = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    SchoolCheckOut = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    BusCheckInSchool = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    BusCheckOutHome = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AttendanceRecords", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AttendanceRecords_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -214,6 +224,11 @@ namespace BestReg.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AttendanceRecords_UserId",
+                table: "AttendanceRecords",
+                column: "UserId");
         }
 
         /// <inheritdoc />

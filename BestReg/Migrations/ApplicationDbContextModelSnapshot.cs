@@ -33,17 +33,31 @@ namespace BestReg.Migrations
                     b.Property<DateTime>("AttendanceDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("CheckInTime")
+                    b.Property<DateTime?>("BusCheckInHome")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("CheckOutTime")
+                    b.Property<DateTime?>("BusCheckInSchool")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("BusCheckOutHome")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("BusCheckOutSchool")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("SchoolCheckIn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("SchoolCheckOut")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("AttendanceRecords");
                 });
@@ -263,6 +277,17 @@ namespace BestReg.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("AttendanceRecord", b =>
+                {
+                    b.HasOne("BestReg.Data.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

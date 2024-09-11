@@ -9,9 +9,6 @@ namespace BestReg.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
-
-        // Entities
-        //public DbSet<CheckInRecord> CheckInRecords { get; set; }
         public DbSet<AttendanceRecord> AttendanceRecords { get; set; }
 
     }

@@ -1,183 +1,126 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using BestReg.Data;
+using BestReg.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using BestReg.Data;
-using System;
-using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using BestReg.Models;
+using System;
 
-namespace BestReg.Controllers
+[Authorize]
+public class QrCodeController : Controller
 {
-    [Authorize]
-    public class QrCodeController : Controller
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ApplicationDbContext _context;
+    private readonly ILogger<QrCodeController> _logger;
+
+    public QrCodeController(UserManager<ApplicationUser> userManager, ApplicationDbContext context, ILogger<QrCodeController> logger)
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly ApplicationDbContext _context;
+        _userManager = userManager;
+        _context = context;
+        _logger = logger;
+    }
 
-        public QrCodeController(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
+    // GET: /QrCode/ShowQrCode
+    public async Task<IActionResult> ShowQrCode()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null || string.IsNullOrEmpty(user.QrCodeBase64))
         {
-            _userManager = userManager;
-            _context = context;
+            _logger.LogWarning("User not found or QR code not available.");
+            return NotFound("User not found or QR code not available.");
         }
 
+        ViewBag.QrCodeBase64 = user.QrCodeBase64;
+        return View();
+    }
 
-
-
-        // displaying the QR code for the logged-in student
-        public async Task<IActionResult> ShowQrCode()
+    // GET: /QrCode/DownloadQrCode
+    public async Task<IActionResult> DownloadQrCode()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null || string.IsNullOrEmpty(user.QrCodeBase64))
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null || string.IsNullOrEmpty(user.QrCodeBase64))
-            {
-                return NotFound("User not found or QR code not available.");
-            }
-
-            ViewBag.QrCodeBase64 = user.QrCodeBase64;
-            return View();
+            _logger.LogWarning("User not found or QR code not available.");
+            return NotFound("User not found or QR code not available.");
         }
 
-        //allowing the student to download their QR code
-        public async Task<IActionResult> DownloadQrCode()
-        {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null || string.IsNullOrEmpty(user.QrCodeBase64))
-            {
-                return NotFound("User not found or QR code not available.");
-            }
+        var qrCodeBytes = Convert.FromBase64String(user.QrCodeBase64);
+        return File(qrCodeBytes, "image/png", "QRCode.png");
+    }
 
-            var qrCodeBytes = Convert.FromBase64String(user.QrCodeBase64);
-            return File(qrCodeBytes, "image/png", "QRCode.png");
+
+    // Action to display the QR code scanning page
+    public IActionResult ScanQRCode(string scanType, string role)
+    {
+        if (string.IsNullOrWhiteSpace(scanType) || string.IsNullOrWhiteSpace(role))
+        {
+            _logger.LogWarning("Invalid scanType or role.");
+            return RedirectToAction("Index", "Home");
         }
 
-        // This action displays the QR code scanner interface, restricted to "BusDriver" and "SchoolSecurity" roles
-        [HttpGet]
-        [Authorize(Roles = "BusDriver, SchoolSecurity")]
-        public IActionResult ScanQrCode()
+        ViewBag.ScanType = scanType;
+        ViewBag.Role = role;
+        return View();
+    }
+
+
+    [HttpPost]
+    public async Task<IActionResult> ProcessQRCode(string qrCodeData, string scanType, string role)
+    {
+        if (string.IsNullOrWhiteSpace(qrCodeData) || string.IsNullOrWhiteSpace(scanType) || string.IsNullOrWhiteSpace(role))
         {
-            return View();
+            _logger.LogWarning("QR Code data, scanType, or role is empty.");
+            return RedirectToAction("Index", "Home");
         }
 
-        // This action handles the scanned QR code data and processes the check-in or check-out
-        [HttpPost]
-        [Authorize(Roles = "BusDriver, SchoolSecurity")]
-        public async Task<IActionResult> GetUserDetailsByQrCode(string qrCodeData)
+        // Handle SchoolAuthority role
+        if (role == "SchoolAuthority")
         {
-            if (string.IsNullOrEmpty(qrCodeData))
+            if (scanType == "SchoolCheckIn")
             {
-                return BadRequest("Invalid QR code data.");
+                return RedirectToAction("SchoolCheckIn", "SchoolAuthority", new { qrCodeData });
             }
-
-            // Use the IDNumber for lookup instead of FindByIdAsync
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.IDNumber == qrCodeData);
-
-            if (user == null)
+            else if (scanType == "SchoolCheckOut")
             {
-                return NotFound("User not found.");
-            }
-
-            // Check for existing check-in record without a check-out
-            var today = DateTime.Today;
-            var attendanceRecord = await _context.AttendanceRecords.FirstOrDefaultAsync(r => r.UserId == user.Id && r.AttendanceDate == today && r.CheckOutTime == null);
-
-            if (attendanceRecord == null)
-            {
-                // No existing record, create a new check-in record
-                attendanceRecord = new AttendanceRecord
-                {
-                    UserId = user.Id,
-                    CheckInTime = DateTime.Now,
-                    AttendanceDate = today
-                };
-                _context.AttendanceRecords.Add(attendanceRecord);
-                await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = $"Student {user.FirstName} with ID {user.IDNumber} has checked in at {attendanceRecord.CheckInTime}.";
+                return RedirectToAction("SchoolCheckOut", "SchoolAuthority", new { qrCodeData });
             }
             else
             {
-                // Existing record found, mark as check-out
-                attendanceRecord.CheckOutTime = DateTime.Now;
-                await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = $"Student {user.FirstName} with ID {user.IDNumber} has checked out at {attendanceRecord.CheckOutTime}.";
+                _logger.LogWarning($"Invalid scanType for SchoolAuthority: {scanType}");
+                return RedirectToAction("Index", "Home", new { error = "Invalid scanType for SchoolAuthority." });
             }
-
-            return RedirectToAction("CheckInConfirmation", new { userId = user.Id });
         }
-
-
-        // This action confirms the check-in or check-out and displays the result to the user
-        [HttpGet]
-        public async Task<IActionResult> CheckInConfirmation(string userId)
+        // Handle BusDriver role (which is working fine)
+        else if (role == "BusDriver")
         {
-            if (string.IsNullOrEmpty(userId))
+            if (scanType == "BusCheckInHome")
             {
-                return BadRequest("Invalid user ID.");
+                return RedirectToAction("BusCheckInHome", "BusDriver", new { qrCodeData });
             }
-
-            var user = await _userManager.FindByIdAsync(userId);
-
-            if (user == null)
+            else if (scanType == "BusCheckOutSchool")
             {
-                return NotFound("User not found.");
+                return RedirectToAction("BusCheckOutSchool", "BusDriver", new { qrCodeData });
             }
-
-            var viewModel = new BestReg.Models.CheckInConfirmationViewModel
+            else if (scanType == "BusCheckInSchool")
             {
-                UserId = user.Id,
-                UserName = $"{user.FirstName} {user.LastName}",
-                CheckInTime = DateTime.Now // Assuming the check-in or check-out time is now
-            };
-
-            ViewBag.SuccessMessage = TempData["SuccessMessage"];
-
-            return View(viewModel);  // Ensure the model being passed is of the correct type
+                return RedirectToAction("BusCheckInSchool", "BusDriver", new { qrCodeData });
+            }
+            else if (scanType == "BusCheckOutHome")
+            {
+                return RedirectToAction("BusCheckOutHome", "BusDriver", new { qrCodeData });
+            }
+            else
+            {
+                _logger.LogWarning($"Invalid scanType for BusDriver: {scanType}");
+                return RedirectToAction("Index", "Home", new { error = "Invalid scanType for BusDriver." });
+            }
         }
 
-
-        // This action processes the check-in for the user
-        [HttpPost]
-        [Authorize(Roles = "BusDriver, SchoolSecurity")]
-        public async Task<IActionResult> CheckInUser(string userId)
-        {
-            if (string.IsNullOrEmpty(userId))
-            {
-                return BadRequest("Invalid user ID.");
-            }
-
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                return NotFound("User not found.");
-            }
-
-            var checkInRecord = await _context.AttendanceRecords
-                .FirstOrDefaultAsync(r => r.UserId == user.Id && r.AttendanceDate == DateTime.Today && r.CheckOutTime == null);
-
-            if (checkInRecord == null)
-            {
-                // No existing record, create a new check-in record
-                checkInRecord = new AttendanceRecord
-                {
-                    UserId = user.Id,
-                    CheckInTime = DateTime.Now,
-                    AttendanceDate = DateTime.Today
-                };
-                _context.AttendanceRecords.Add(checkInRecord);
-                await _context.SaveChangesAsync();
-            }
-
-            var viewModel = new CheckInConfirmationViewModel
-            {
-                UserId = user.Id,
-                UserName = $"{user.FirstName} {user.LastName}",
-                CheckInTime = checkInRecord.CheckInTime ?? DateTime.Now
-
-            };
-
-            return View("CheckInConfirmation", viewModel);
-        }
+        // Log invalid scanType or role
+        _logger.LogWarning($"Invalid scanType or role: {scanType}, {role}. Redirecting to the Index page.");
+        return RedirectToAction("Index", "Home");
     }
+
 }

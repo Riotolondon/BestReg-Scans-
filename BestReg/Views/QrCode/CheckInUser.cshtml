@@ -1,7 +1,7 @@
 ﻿@model BestReg.Models.CheckInConfirmationViewModel
 
 @{
-    ViewData["Title"] = "Check In User";
+    ViewData["Title"] = "Check In Confirmation";
 }
 
 <div class="container mt-5">
@@ -18,11 +18,12 @@
                         <dd class="col-sm-8">@Model.UserName</dd>
 
                         <dt class="col-sm-4">Check-In Time</dt>
-                        <dd class="col-sm-8">@Model.CheckInTime.ToString("f")</dd>
+                        <dd class="col-sm-8">@Model.CheckInTime?.ToString("f") ?? "Not Available"</dd>
                     </dl>
 
                     <form asp-action="ConfirmCheckIn" method="post">
                         <input type="hidden" name="userId" value="@Model.UserId" />
+                        <input type="hidden" name="stage" value="@ViewBag.Stage" />
                         <button type="submit" class="btn btn-primary w-100">Confirm Check-In</button>
                     </form>
                 </div>

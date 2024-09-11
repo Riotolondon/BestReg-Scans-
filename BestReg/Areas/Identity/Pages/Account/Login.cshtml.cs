@@ -87,7 +87,7 @@ namespace BestReg.Areas.Identity.Pages.Account
                         {
                             return RedirectToAction("Index", "Admin");
                         }
-                        if (roles.Contains("SchoolSecurity"))
+                        if (roles.Contains("SchoolAuthority"))
                         {
                             return RedirectToAction("Index", "SchoolAuthority");
                         }

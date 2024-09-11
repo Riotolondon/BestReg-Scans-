@@ -1,16 +1,24 @@
 ﻿@{
-    ViewData["Title"] = "Your QR Code";
+    ViewData["Title"] = "Show QR Code";
 }
 
-<h2>@ViewData["Title"]</h2>
-
-@if (string.IsNullOrEmpty(ViewBag.QrCodeBase64))
-{
-    <p>No QR code available.</p>
-}
-else
-{
-    <img src="data:image/png;base64,@ViewBag.QrCodeBase64" alt="QR Code" />
-    <br />
-    <a asp-action="DownloadQrCode" class="btn btn-primary mt-3">Download QR Code</a>
-}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h2 class="card-title">Your QR Code</h2>
+                    @if (ViewBag.QrCodeBase64 != null)
+                    {
+                        <img src="data:image/png;base64,@ViewBag.QrCodeBase64" alt="QR Code" class="img-fluid" />
+                    }
+                    else
+                    {
+                        <p>No QR code available.</p>
+                    }
+                    <a href="@Url.Action("DownloadQrCode", "QrCode")" class="btn btn-primary mt-3">Download QR Code</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

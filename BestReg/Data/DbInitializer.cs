@@ -30,7 +30,7 @@ namespace BestReg.Data
             var roles = new[]
             {
         "Admin",
-        "SchoolSecurity",
+        "SchoolAuthority",
         "BusDriver",
         "Student"
       

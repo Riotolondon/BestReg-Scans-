@@ -18,13 +18,19 @@
                     <div id="qr-reader-results" class="mt-3 text-center"></div>
 
                     <!-- Hidden form to submit the scanned QR code data -->
-                    <form id="checkInForm" asp-action="GetUserDetailsByQrCode" method="post">
+                    <form id="checkInForm" asp-controller="SchoolAuthority" asp-action="SchoolCheckIn" method="post">
+                        @Html.AntiForgeryToken()
                         <input type="hidden" id="qrCodeData" name="qrCodeData" />
+                        <input type="hidden" id="scanType" name="scanType" value="@ViewBag.ScanType" />
+                        <input type="hidden" id="role" name="role" value="@ViewBag.Role" />
                         <button type="submit" class="w-100 btn btn-lg btn-primary mt-3" id="checkInBtn" style="display:none;">
-                            <span id="checkInText">Check In</span>
+                            <span id="checkInText">Submit</span>
                             <span id="loader" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display:none;"></span>
                         </button>
                     </form>
+
+
+
                 </div>
             </div>
         </div>
@@ -41,19 +47,22 @@
         const qrResult = document.getElementById("qr-reader-results");
         const qrCodeDataInput = document.getElementById("qrCodeData");
         const checkInBtn = document.getElementById("checkInBtn");
+        let formSubmitted = false; // Flag to prevent multiple form submissions
 
+        // Access the user's camera
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
             .then(function (stream) {
                 video.srcObject = stream;
-                video.setAttribute("playsinline", true);
+                video.setAttribute("playsinline", true); // iOS Safari requires this attribute
                 video.play();
-                requestAnimationFrame(tick);
+                requestAnimationFrame(tick); // Call tick() to start reading QR codes
             })
             .catch(function (err) {
                 console.error("Error accessing the camera: ", err);
-                qrResult.innerHTML = `<span class="text-danger">Failed to access the camera.</span>`;
+                qrResult.innerHTML = `<span class="text-danger">Failed to access the camera. Please check camera permissions.</span>`;
             });
 
+        // Continuously check for a QR code in the video feed
         function tick() {
             if (video.readyState === video.HAVE_ENOUGH_DATA) {
                 canvas.height = video.videoHeight;
@@ -63,13 +72,17 @@
                 const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
                 const code = jsQR(imageData.data, imageData.width, imageData.height);
 
-                if (code) {
+                if (code && !formSubmitted) {
                     qrResult.innerHTML = `<span class="text-success">QR Code detected: ${code.data}</span>`;
-                    qrCodeDataInput.value = code.data;
-                    checkInBtn.style.display = 'block'; // Show the Check In button
+                    qrCodeDataInput.value = code.data; // Set QR code data into hidden input field
+                    checkInBtn.style.display = 'block'; // Show the Check In button when QR code is detected
+                    formSubmitted = true; // Set flag to prevent multiple submissions
                 }
             }
-            requestAnimationFrame(tick);
+            requestAnimationFrame(tick); // Continuously call tick()
         }
+
+        // Optional: Reset the form submission flag when the form is reset or user interaction
+        document.getElementById("checkInForm").addEventListener("reset", () => formSubmitted = false);
     </script>
 }

@@ -1,7 +1,7 @@
-﻿@model BestReg.Models.CheckInConfirmationViewModel
+﻿@model CheckInConfirmationViewModel
 
 @{
-    ViewData["Title"] = "Attendance Confirmation";
+    ViewData["Title"] = "Check In Confirmation";
 }
 
 <div class="container mt-5">
@@ -9,24 +9,23 @@
         <div class="col-md-8">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <h2 class="card-title text-center">Attendance Confirmation</h2>
+                    <h2 class="card-title text-center">Check In Confirmation</h2>
 
-                    @if (!string.IsNullOrEmpty(ViewBag.SuccessMessage))
+                    @if (ViewBag.SuccessMessage != null)
                     {
-                        <div class="alert alert-success text-center">
+                        <div class="alert alert-success">
                             @ViewBag.SuccessMessage
                         </div>
                     }
 
                     <dl class="row">
-                        <dt class="col-sm-4">Name</dt>
+                        <dt class="col-sm-4">Name:</dt>
                         <dd class="col-sm-8">@Model.UserName</dd>
-
-                        <dt class="col-sm-4">Time</dt>
-                        <dd class="col-sm-8">@Model.CheckInTime.ToString("f")</dd>
+                        <dt class="col-sm-4">Check In Time:</dt>
+                        <dd class="col-sm-8">@Model.CheckInTime?.ToString("g")</dd>
+                        <dt class="col-sm-4">Check Out Time:</dt>
+                        <dd class="col-sm-8">@Model.CheckOutTime?.ToString("g")</dd>
                     </dl>
-
-                    <a href="@Url.Action("ScanQrCode", "QrCode")" class="btn btn-primary w-100">Scan Another QR Code</a>
                 </div>
             </div>
         </div>

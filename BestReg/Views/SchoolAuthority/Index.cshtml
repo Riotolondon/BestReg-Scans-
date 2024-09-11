@@ -1,10 +1,87 @@
-﻿@{
+﻿@using BestReg.Data
+@model List<AttendanceRecord>
+@{
     ViewData["Title"] = "School Authority Dashboard";
 }
 
-<h2>@ViewData["Title"]</h2>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="text-center">Welcome, School Authority</h2>
 
-<div class="d-grid gap-2 col-6 mx-auto mt-5">
-    <a asp-action="ScanIn" class="btn btn-primary btn-lg">Scan In</a>
-    <a asp-action="ScanOut" class="btn btn-danger btn-lg">Scan Out</a>
+            @if (!string.IsNullOrEmpty(ViewBag.Error))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @ViewBag.Error
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(ViewBag.Success))
+            {
+                <div class="alert alert-success" role="alert">
+                    @ViewBag.Success
+                </div>
+            }
+
+            <!-- Quick Actions Card -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h4 class="card-title">Quick Actions</h4>
+                    <div class="d-grid gap-2 d-md-block">
+                        <a asp-controller="QrCode" asp-action="ScanQRCode" asp-route-scanType="SchoolCheckIn" asp-route-role="SchoolAuthority" class="btn btn-primary">Scan In </a>
+                        <a asp-controller="QrCode" asp-action="ScanQRCode" asp-route-scanType="SchoolCheckOut" asp-route-role="SchoolAuthority" class="btn btn-danger">Scan Out</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity Card -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h4 class="card-title">Recent Activity</h4>
+                    @if (Model != null && Model.Any())
+                    {
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Check-In Time</th>
+                                    <th>Check-Out Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var record in Model)
+                                {
+                                    <tr>
+                                        <td>@(record.User?.UserName ?? "Unknown")</td>
+                                        <td>@(record.SchoolCheckIn?.ToString("HH:mm") ?? "-")</td>
+                                        <td>@(record.SchoolCheckOut?.ToString("HH:mm") ?? "-")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p>No recent activity to display.</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Attendance Statistics Card -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h4 class="card-title">Attendance Statistics</h4>
+                    @if (Model != null)
+                    {
+                        <p>Total Check-ins Today: @Model.Count(r => r.SchoolCheckIn.HasValue)</p>
+                        <p>Total Check-outs Today: @Model.Count(r => r.SchoolCheckOut.HasValue)</p>
+                    }
+                    else
+                    {
+                        <p>No attendance data available.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
