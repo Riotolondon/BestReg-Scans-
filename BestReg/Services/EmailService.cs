@@ -1,7 +1,4 @@
 ﻿using System.IO;
-using System.Text;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Net.Mail;
 using System.Net;
 using System.Threading.Tasks;
@@ -11,11 +8,14 @@ using ZXing.QrCode;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text.Encodings.Web;
+using System.Drawing.Imaging;
+using System.Drawing;
 
 public interface IEmailService
 {
     Task<bool> SendConfirmationEmailAsync(string email, string callbackUrl);
     Task<bool> SendQrCodeEmailAsync(string email, string qrCodeBase64);
+    Task<bool> SendEmailAsync(string email, string subject, string message);
     byte[] GenerateQrCode(string text);
     byte[] GenerateBarcode(string text);
 }
@@ -31,30 +31,41 @@ public class EmailService : IEmailService
         _logger = logger;
     }
 
-    private async Task<bool> SendEmailAsync(string email, string subject, string body)
+    public async Task<bool> SendEmailAsync(string email, string subject, string message)
     {
         try
         {
-            MailMessage message = new MailMessage();
-            SmtpClient smtpClient = new SmtpClient();
-            message.From = new MailAddress("dutengagement@outlook.com");
-            message.To.Add(email);
-            message.Subject = subject;
-            message.IsBodyHtml = true;
-            message.Body = body;
+            var smtpServer = _configuration["SmtpSettings:Server"];
+            var smtpPort = Convert.ToInt32(_configuration["SmtpSettings:Port"]);
+            var senderEmail = _configuration["SmtpSettings:From"];
+            var username = _configuration["SmtpSettings:UserName"];
+            var password = _configuration["SmtpSettings:Password"];
+            var enableSsl = Convert.ToBoolean(_configuration["SmtpSettings:EnableSsl"]);
 
-            smtpClient.Port = 587;
-            smtpClient.Host = "smtp.outlook.com";
-            smtpClient.EnableSsl = true;
-            smtpClient.UseDefaultCredentials = false;
-            smtpClient.Credentials = new NetworkCredential("dutengagement@outlook.com", "Admin@Dut01");
-            smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
-            smtpClient.Send(message);
+            var smtpClient = new SmtpClient(smtpServer)
+            {
+                Port = smtpPort,
+                Credentials = new NetworkCredential(username, password),
+                EnableSsl = enableSsl
+            };
+
+            var mailMessage = new MailMessage
+            {
+                From = new MailAddress(senderEmail),
+                Subject = subject,
+                Body = message,
+                IsBodyHtml = true
+            };
+
+            mailMessage.To.Add(email);
+
+            await smtpClient.SendMailAsync(mailMessage);
+
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while sending the email: {Message}", ex.Message);
+            _logger.LogError($"Error sending email: {ex.Message}");
             return false;
         }
     }
@@ -112,6 +123,8 @@ public class EmailService : IEmailService
             }
         }
     }
+
+
 
     public byte[] GenerateBarcode(string text)
     {

@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
+
 namespace BestReg.Controllers
 {
     [Authorize(Roles = "SchoolAuthority")]
@@ -13,11 +14,13 @@ namespace BestReg.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<SchoolAuthorityController> _logger;
+        private readonly IEmailService _emailService;
 
-        public SchoolAuthorityController(ApplicationDbContext context, ILogger<SchoolAuthorityController> logger)
+        public SchoolAuthorityController(ApplicationDbContext context, ILogger<SchoolAuthorityController> logger, IEmailService emailService)
         {
             _context = context;
             _logger = logger;
+            _emailService = emailService; 
         }
 
         // GET: SchoolAuthority/Index
@@ -27,24 +30,19 @@ namespace BestReg.Controllers
             ViewBag.Success = success;
 
             var today = DateTime.Now.Date;
-            var recentActivity = await _context.AttendanceRecords
-                .Where(a => a.AttendanceDate == today)
-                .OrderByDescending(a => a.SchoolCheckIn ?? a.SchoolCheckOut ?? DateTime.MinValue)
-                .Take(10)
-                .Include(a => a.User)
-                .ToListAsync();
+            var recentActivity = await _context.AttendanceRecords.Where(a => a.AttendanceDate == today).OrderByDescending(a => a.SchoolCheckIn ?? a.SchoolCheckOut ?? DateTime.MinValue).Take(10).Include(a => a.User).ToListAsync();
 
             return View(recentActivity);
         }
 
-        // POST: SchoolAuthority/SchoolCheckIn
+      
         [HttpPost]
         public async Task<IActionResult> SchoolCheckIn(string qrCodeData)
         {
             return await HandleSchoolCheckInOut(qrCodeData, DateTime.Now, (attendance) => attendance.SchoolCheckIn = DateTime.Now, "Check-in");
         }
 
-        // POST: SchoolAuthority/SchoolCheckOut
+        
         [HttpPost]
         public async Task<IActionResult> SchoolCheckOut(string qrCodeData)
         {
@@ -69,13 +67,11 @@ namespace BestReg.Controllers
                 return RedirectToAction("Index", new { error = "User not found." });
             }
 
-            // Get today's date
+          
             var today = now.Date;
 
             // Check if an attendance record already exists for the user today
             var attendanceRecord = await _context.AttendanceRecords.FirstOrDefaultAsync(a => a.UserId == user.Id && a.AttendanceDate == today);
-
-            // If no record exists, create a new one
             if (attendanceRecord == null)
             {
                 attendanceRecord = new AttendanceRecord
@@ -88,9 +84,27 @@ namespace BestReg.Controllers
 
             // Update the attendance record (either check-in or check-out)
             updateAction(attendanceRecord);
-
-            // Save the changes to the database
             await _context.SaveChangesAsync();
+
+            // Send email notification to parent
+            var parentEmail = user.Email;
+            if (!string.IsNullOrEmpty(parentEmail))
+            {
+                var emailSubject = $"Your child has {actionType.ToLower()} at school";
+                var emailBody = $"Dear Parent,<br>Your child {user.UserName} has successfully {actionType.ToLower()} at school on {now}.<br>Best Regards,<br>BestReg School";
+
+                var isEmailSent = await _emailService.SendEmailAsync(parentEmail, emailSubject, emailBody);
+
+                if (!isEmailSent)
+                {
+                    _logger.LogError($"Failed to send email to {parentEmail} for {user.UserName}'s {actionType.ToLower()}.");
+                }
+                else
+                {
+                    _logger.LogInformation($"Email sent to {parentEmail} for {user.UserName}'s {actionType.ToLower()}.");
+                }
+            }
+
 
             // Log the action and redirect to the Index page with a success message
             _logger.LogInformation($"{actionType} recorded successfully for {user.UserName}.");

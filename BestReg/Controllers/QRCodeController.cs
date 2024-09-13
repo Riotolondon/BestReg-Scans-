@@ -92,7 +92,7 @@ public class QrCodeController : Controller
                 return RedirectToAction("Index", "Home", new { error = "Invalid scanType for SchoolAuthority." });
             }
         }
-        // Handle BusDriver role (which is working fine)
+        // Handle BusDriver role
         else if (role == "BusDriver")
         {
             if (scanType == "BusCheckInHome")
