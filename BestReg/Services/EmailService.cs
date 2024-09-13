@@ -42,33 +42,41 @@ public class EmailService : IEmailService
             var password = _configuration["SmtpSettings:Password"];
             var enableSsl = Convert.ToBoolean(_configuration["SmtpSettings:EnableSsl"]);
 
-            var smtpClient = new SmtpClient(smtpServer)
+            using (var smtpClient = new SmtpClient(smtpServer))
             {
-                Port = smtpPort,
-                Credentials = new NetworkCredential(username, password),
-                EnableSsl = enableSsl
-            };
+                smtpClient.Port = smtpPort;
+                smtpClient.Credentials = new NetworkCredential(username, password);
+                smtpClient.EnableSsl = enableSsl;
 
-            var mailMessage = new MailMessage
-            {
-                From = new MailAddress(senderEmail),
-                Subject = subject,
-                Body = message,
-                IsBodyHtml = true
-            };
+                var mailMessage = new MailMessage
+                {
+                    From = new MailAddress(senderEmail),
+                    Subject = subject,
+                    Body = message,
+                    IsBodyHtml = true
+                };
 
-            mailMessage.To.Add(email);
+                mailMessage.To.Add(email);
 
-            await smtpClient.SendMailAsync(mailMessage);
+                await smtpClient.SendMailAsync(mailMessage);
+            }
 
             return true;
         }
+        catch (SmtpException smtpEx)
+        {
+            // Handle SMTP-specific errors
+            _logger.LogError($"SMTP error sending email: {smtpEx.Message}");
+            return false;
+        }
         catch (Exception ex)
         {
+            // Handle general errors
             _logger.LogError($"Error sending email: {ex.Message}");
             return false;
         }
     }
+
 
     public async Task<bool> SendConfirmationEmailAsync(string email, string callbackUrl)
     {
