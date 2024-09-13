@@ -31,37 +31,37 @@ public class EmailService : IEmailService
         _logger = logger;
     }
 
-    public async Task<bool> SendEmailAsync(string email, string subject, string message)
+    public async Task<bool> SendEmailAsync(string email, string subject, string htmlMessage)
     {
         try
         {
-            var smtpServer = _configuration["SmtpSettings:Server"];
-            var smtpPort = Convert.ToInt32(_configuration["SmtpSettings:Port"]);
-            var senderEmail = _configuration["SmtpSettings:From"];
-            var username = _configuration["SmtpSettings:UserName"];
-            var password = _configuration["SmtpSettings:Password"];
-            var enableSsl = Convert.ToBoolean(_configuration["SmtpSettings:EnableSsl"]);
-
-            using (var smtpClient = new SmtpClient(smtpServer))
+            // Create a new MailMessage instance
+            MailMessage message = new MailMessage
             {
-                smtpClient.Port = smtpPort;
-                smtpClient.Credentials = new NetworkCredential(username, password);
-                smtpClient.EnableSsl = enableSsl;
+                From = new MailAddress("Go4toro@faniehome.com"), 
+                Subject = subject, 
+                IsBodyHtml = true, 
+                Body = htmlMessage 
+            };
 
-                var mailMessage = new MailMessage
-                {
-                    From = new MailAddress(senderEmail),
-                    Subject = subject,
-                    Body = message,
-                    IsBodyHtml = true
-                };
+            // Add recipient to the email
+            message.To.Add(email);
 
-                mailMessage.To.Add(email);
+            // Configure SmtpClient settings
+            using (SmtpClient smtpClient = new SmtpClient())
+            {
+                smtpClient.Port = 587; 
+                smtpClient.Host = "smtp.office365.com"; 
+                smtpClient.EnableSsl = true; 
+                smtpClient.UseDefaultCredentials = false; 
+                smtpClient.Credentials = new NetworkCredential("Go4toro@faniehome.com", "Mossgert@2018"); 
+                smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network; 
 
-                await smtpClient.SendMailAsync(mailMessage);
+                // Send the email
+                await smtpClient.SendMailAsync(message); 
             }
 
-            return true;
+            return true; 
         }
         catch (SmtpException smtpEx)
         {
@@ -76,6 +76,7 @@ public class EmailService : IEmailService
             return false;
         }
     }
+
 
 
     public async Task<bool> SendConfirmationEmailAsync(string email, string callbackUrl)

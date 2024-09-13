@@ -1,4 +1,5 @@
-﻿using BestReg.Data;
+﻿using Azure.Core;
+using BestReg.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -156,21 +157,39 @@ namespace BestReg.Areas.Identity.Pages.Account
         {
             try
             {
+                //MailMessage message = new MailMessage();
+                //SmtpClient smtpClient = new SmtpClient();
+                //message.From = new MailAddress("dutengagement@outlook.com");
+                //message.To.Add(email);
+                //message.Subject = subject;
+                //message.IsBodyHtml = true;
+                //message.Body = confirmLink;
+
+                //smtpClient.Port = 587;
+                //smtpClient.Host = "smtp.outlook.com";
+                //smtpClient.EnableSsl = true;
+                //smtpClient.UseDefaultCredentials = false;
+                //smtpClient.Credentials = new NetworkCredential("dutengagement@outlook.com", "Admin@Dut01");
+                //smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
+                //smtpClient.Send(message);
+
                 MailMessage message = new MailMessage();
                 SmtpClient smtpClient = new SmtpClient();
-                message.From = new MailAddress("dutengagement@outlook.com");
+                message.From = new MailAddress("Go4toro@faniehome.com");
                 message.To.Add(email);
                 message.Subject = subject;
                 message.IsBodyHtml = true;
                 message.Body = confirmLink;
 
                 smtpClient.Port = 587;
-                smtpClient.Host = "smtp.outlook.com";
+                smtpClient.Host = "smtp.office365.com";
+
                 smtpClient.EnableSsl = true;
                 smtpClient.UseDefaultCredentials = false;
-                smtpClient.Credentials = new NetworkCredential("dutengagement@outlook.com", "Admin@Dut01");
+                smtpClient.Credentials = new NetworkCredential("Go4toro@faniehome.com", "Mossgert@2018");
                 smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
                 smtpClient.Send(message);
+
                 return true;
             }
             catch (Exception ex)
