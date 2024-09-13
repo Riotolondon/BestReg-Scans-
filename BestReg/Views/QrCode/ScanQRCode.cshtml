@@ -18,7 +18,7 @@
                     <div id="qr-reader-results" class="mt-3 text-center"></div>
 
                     <!-- Hidden form to submit the scanned QR code data -->
-                    <form id="checkInForm" asp-controller="SchoolAuthority" asp-action="SchoolCheckIn" method="post">
+                    <form id="checkInForm" method="post">
                         @Html.AntiForgeryToken()
                         <input type="hidden" id="qrCodeData" name="qrCodeData" />
                         <input type="hidden" id="scanType" name="scanType" value="@ViewBag.ScanType" />
@@ -28,9 +28,6 @@
                             <span id="loader" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display:none;"></span>
                         </button>
                     </form>
-
-
-
                 </div>
             </div>
         </div>
@@ -84,5 +81,54 @@
 
         // Optional: Reset the form submission flag when the form is reset or user interaction
         document.getElementById("checkInForm").addEventListener("reset", () => formSubmitted = false);
+
+        // Dynamically set form action based on role and scan type
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("checkInForm");
+            const role = document.getElementById("role").value;
+            const scanType = document.getElementById("scanType").value;
+
+            let action = "";
+            let controller = "";
+
+            if (role === "BusDriver") {
+                controller = "BusDriver";
+                switch (scanType) {
+                    case "BusCheckInHome":
+                        action = "BusCheckInHome";
+                        break;
+                    case "BusCheckOutSchool":
+                        action = "BusCheckOutSchool";
+                        break;
+                    case "BusCheckInSchool":
+                        action = "BusCheckInSchool";
+                        break;
+                    case "BusCheckOutHome":
+                        action = "BusCheckOutHome";
+                        break;
+                    default:
+                        console.error("Unknown scanType for BusDriver");
+                }
+            } else if (role === "SchoolAuthority") {
+                controller = "SchoolAuthority";
+                switch (scanType) {
+                    case "SchoolCheckIn":
+                        action = "SchoolCheckIn";
+                        break;
+                    case "SchoolCheckOut":
+                        action = "SchoolCheckOut";
+                        break;
+                    default:
+                        console.error("Unknown scanType for SchoolAuthority");
+                }
+            }
+
+            // Set form action URL dynamically
+            if (controller && action) {
+                form.setAttribute("action", `/${controller}/${action}`);
+            } else {
+                console.error("Form action could not be set.");
+            }
+        });
     </script>
 }

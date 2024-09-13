@@ -6,7 +6,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-
 namespace BestReg.Controllers
 {
     [Authorize(Roles = "SchoolAuthority")]
@@ -20,7 +19,7 @@ namespace BestReg.Controllers
         {
             _context = context;
             _logger = logger;
-            _emailService = emailService; 
+            _emailService = emailService;
         }
 
         // GET: SchoolAuthority/Index
@@ -30,27 +29,30 @@ namespace BestReg.Controllers
             ViewBag.Success = success;
 
             var today = DateTime.Now.Date;
-            var recentActivity = await _context.AttendanceRecords.Where(a => a.AttendanceDate == today).OrderByDescending(a => a.SchoolCheckIn ?? a.SchoolCheckOut ?? DateTime.MinValue).Take(10).Include(a => a.User).ToListAsync();
+            var recentActivity = await _context.AttendanceRecords
+                .Where(a => a.AttendanceDate == today)
+                .OrderByDescending(a => a.SchoolCheckIn ?? a.SchoolCheckOut ?? DateTime.MinValue)
+                .Take(10)
+                .Include(a => a.User)
+                .ToListAsync();
 
             return View(recentActivity);
         }
 
-      
         [HttpPost]
         public async Task<IActionResult> SchoolCheckIn(string qrCodeData)
         {
-            return await HandleSchoolCheckInOut(qrCodeData, DateTime.Now, (attendance) => attendance.SchoolCheckIn = DateTime.Now, "Check-in");
+            return await HandleSchoolCheckInOut(qrCodeData, DateTime.Now, "Check-in");
         }
 
-        
         [HttpPost]
         public async Task<IActionResult> SchoolCheckOut(string qrCodeData)
         {
-            return await HandleSchoolCheckInOut(qrCodeData, DateTime.Now, (attendance) => attendance.SchoolCheckOut = DateTime.Now, "Check-out");
+            return await HandleSchoolCheckInOut(qrCodeData, DateTime.Now, "Check-out");
         }
 
         // Helper method to handle both check-in and check-out
-        private async Task<IActionResult> HandleSchoolCheckInOut(string qrCodeData, DateTime now, Action<AttendanceRecord> updateAction, string actionType)
+        private async Task<IActionResult> HandleSchoolCheckInOut(string qrCodeData, DateTime now, string actionType)
         {
             if (string.IsNullOrWhiteSpace(qrCodeData))
             {
@@ -58,32 +60,68 @@ namespace BestReg.Controllers
                 return RedirectToAction("Index", new { error = "Invalid QR Code data." });
             }
 
-            // Find the user by their IDNumber (scanned from the QR code)
             var user = await _context.Users.FirstOrDefaultAsync(u => u.IDNumber == qrCodeData);
-
             if (user == null)
             {
                 _logger.LogWarning($"User with IDNumber {qrCodeData} not found.");
                 return RedirectToAction("Index", new { error = "User not found." });
             }
 
-          
             var today = now.Date;
+            var attendanceRecord = await _context.AttendanceRecords
+                .FirstOrDefaultAsync(a => a.UserId == user.Id && a.AttendanceDate == today);
 
-            // Check if an attendance record already exists for the user today
-            var attendanceRecord = await _context.AttendanceRecords.FirstOrDefaultAsync(a => a.UserId == user.Id && a.AttendanceDate == today);
-            if (attendanceRecord == null)
+            // If no record exists for today and it's a check-out, disallow it
+            if (attendanceRecord == null && actionType == "Check-out")
             {
-                attendanceRecord = new AttendanceRecord
-                {
-                    UserId = user.Id,
-                    AttendanceDate = today
-                };
-                _context.AttendanceRecords.Add(attendanceRecord);
+                _logger.LogWarning($"User {user.UserName} cannot check out without checking in.");
+                return RedirectToAction("Index", new { error = "User must check in before checking out." });
             }
 
-            // Update the attendance record (either check-in or check-out)
-            updateAction(attendanceRecord);
+            if (attendanceRecord == null)
+            {
+                // Create a new attendance record for check-in
+                if (actionType == "Check-in")
+                {
+                    attendanceRecord = new AttendanceRecord
+                    {
+                        UserId = user.Id,
+                        AttendanceDate = today,
+                        SchoolCheckIn = now
+                    };
+                    _context.AttendanceRecords.Add(attendanceRecord);
+                }
+            }
+            else
+            {
+                // Check-in validation
+                if (actionType == "Check-in")
+                {
+                    if (attendanceRecord.SchoolCheckIn.HasValue)
+                    {
+                        _logger.LogWarning($"User {user.UserName} has already checked in today.");
+                        return RedirectToAction("Index", new { error = "User has already checked in today." });
+                    }
+                    attendanceRecord.SchoolCheckIn = now;
+                }
+                // Check-out validation
+                else if (actionType == "Check-out")
+                {
+                    if (!attendanceRecord.SchoolCheckIn.HasValue)
+                    {
+                        _logger.LogWarning($"User {user.UserName} cannot check out without checking in.");
+                        return RedirectToAction("Index", new { error = "User must check in before checking out." });
+                    }
+
+                    if (attendanceRecord.SchoolCheckOut.HasValue)
+                    {
+                        _logger.LogWarning($"User {user.UserName} has already checked out today.");
+                        return RedirectToAction("Index", new { error = "User has already checked out today." });
+                    }
+                    attendanceRecord.SchoolCheckOut = now;
+                }
+            }
+
             await _context.SaveChangesAsync();
 
             // Send email notification to parent
@@ -92,7 +130,6 @@ namespace BestReg.Controllers
             {
                 var emailSubject = $"Your child has {actionType.ToLower()} at school";
                 var emailBody = $"Dear Parent,<br>Your child {user.UserName} has successfully {actionType.ToLower()} at school on {now}.<br>Best Regards,<br>BestReg School";
-
                 var isEmailSent = await _emailService.SendEmailAsync(parentEmail, emailSubject, emailBody);
 
                 if (!isEmailSent)
@@ -105,8 +142,6 @@ namespace BestReg.Controllers
                 }
             }
 
-
-            // Log the action and redirect to the Index page with a success message
             _logger.LogInformation($"{actionType} recorded successfully for {user.UserName}.");
             return RedirectToAction("Index", new { success = $"{actionType} recorded successfully for {user.UserName}." });
         }

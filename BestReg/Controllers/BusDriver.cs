@@ -27,37 +27,43 @@ namespace BestReg.Controllers
             return View();
         }
 
-        [HttpGet]
+        //Scan QR Code View
+       [HttpPost]
         public IActionResult ScanQRCode(string scanType)
         {
             ViewBag.ScanType = scanType;
             return View();
         }
 
-        [HttpGet]
+        // Bus Check-in at Home
+        [HttpPost]
         public async Task<IActionResult> BusCheckInHome(string qrCodeData)
         {
-            return await HandleBusCheckInOut(qrCodeData, DateTime.Now, (attendance) => attendance.BusCheckInHome = DateTime.Now, "check-in home");
+            return await HandleBusCheckInOut(qrCodeData, DateTime.Now, (attendance) => attendance.BusCheckInHome = DateTime.Now, "check-in at home");
         }
 
-        [HttpGet]
+        // Bus Check-out at School
+        [HttpPost]
         public async Task<IActionResult> BusCheckOutSchool(string qrCodeData)
         {
-            return await HandleBusCheckInOut(qrCodeData, DateTime.Now, (attendance) => attendance.BusCheckOutSchool = DateTime.Now, "check-out school");
+            return await HandleBusCheckInOut(qrCodeData, DateTime.Now, (attendance) => attendance.BusCheckOutSchool = DateTime.Now, "check-out at school");
         }
 
-        [HttpGet]
+        // Bus Check-in at School
+        [HttpPost]
         public async Task<IActionResult> BusCheckInSchool(string qrCodeData)
         {
-            return await HandleBusCheckInOut(qrCodeData, DateTime.Now, (attendance) => attendance.BusCheckInSchool = DateTime.Now, "check-in school");
+            return await HandleBusCheckInOut(qrCodeData, DateTime.Now, (attendance) => attendance.BusCheckInSchool = DateTime.Now, "check-in at school");
         }
 
-        [HttpGet]
+        // Bus Check-out at Home
+        [HttpPost]
         public async Task<IActionResult> BusCheckOutHome(string qrCodeData)
         {
-            return await HandleBusCheckInOut(qrCodeData, DateTime.Now, (attendance) => attendance.BusCheckOutHome = DateTime.Now, "check-out home");
+            return await HandleBusCheckInOut(qrCodeData, DateTime.Now, (attendance) => attendance.BusCheckOutHome = DateTime.Now, "check-out at home");
         }
 
+        // Helper Method to Handle Both Check-in and Check-out
         private async Task<IActionResult> HandleBusCheckInOut(string qrCodeData, DateTime now, Action<AttendanceRecord> updateAction, string actionType)
         {
             if (string.IsNullOrWhiteSpace(qrCodeData))
@@ -66,6 +72,7 @@ namespace BestReg.Controllers
                 return RedirectToAction("Index", new { error = "Invalid QR Code data." });
             }
 
+            // Fetch User by QR Code Data (IDNumber)
             var user = await _context.Users.FirstOrDefaultAsync(u => u.IDNumber == qrCodeData);
 
             if (user == null)
@@ -74,11 +81,13 @@ namespace BestReg.Controllers
                 return RedirectToAction("Index", new { error = "User not found." });
             }
 
-            var today = DateTime.Now.Date;
-            var attendanceRecord = await _context.AttendanceRecords.FirstOrDefaultAsync(a => a.UserId == user.Id && a.AttendanceDate == today);
+            var today = now.Date;
+            var attendanceRecord = await _context.AttendanceRecords
+                .FirstOrDefaultAsync(a => a.UserId == user.Id && a.AttendanceDate == today);
 
             if (attendanceRecord == null)
             {
+                // Create a new attendance record if it doesn't exist
                 attendanceRecord = new AttendanceRecord
                 {
                     UserId = user.Id,
@@ -86,11 +95,12 @@ namespace BestReg.Controllers
                 };
                 _context.AttendanceRecords.Add(attendanceRecord);
             }
+
+            // Perform the action (Check-in or Check-out)
             updateAction(attendanceRecord);
             await _context.SaveChangesAsync();
 
-
-            // Send email notification to parent
+            // Send notification email to parents if applicable
             var parentEmail = user.Email;
             if (!string.IsNullOrEmpty(parentEmail))
             {
@@ -109,7 +119,7 @@ namespace BestReg.Controllers
                 }
             }
 
-            return RedirectToAction("Index", new { success = "Check-in/out recorded successfully." });
+            return RedirectToAction("Index", new { success = $"{actionType} recorded successfully." });
         }
     }
 }
