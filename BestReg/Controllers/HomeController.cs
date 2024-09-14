@@ -24,4 +24,11 @@ public class HomeController : Controller
         }
         return View();
     }
+
+    // Add the Privacy Action here
+    public IActionResult Privacy()
+    {
+        return View();
+    }
 }
+

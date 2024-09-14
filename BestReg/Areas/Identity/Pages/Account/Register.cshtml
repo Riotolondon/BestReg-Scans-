@@ -4,14 +4,12 @@
     ViewData["Title"] = "Register";
 }
 
-<h1>@ViewData["Title"]</h1>
-
-<div class="row">
-    <div class="col-md-4">
+<div class="container-register">
+    <div class="card card-register shadow-lg">
+        <h2 class="card-title text-center">Create a new account</h2>
+        <hr />
         <form method="post">
-            <h2>Create a new account.</h2>
-            <hr />
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div asp-validation-summary="ModelOnly" class="text-danger text-center"></div>
 
             <div class="form-floating mb-3">
                 <input asp-for="Input.FirstName" class="form-control" autocomplete="given-name" placeholder="First Name" />
@@ -70,3 +68,4 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+
