@@ -35,7 +35,7 @@ public class EmailService : IEmailService
     {
         try
         {
-            // Create a new MailMessage instance
+            
             MailMessage message = new MailMessage
             {
                 From = new MailAddress("Go4toro@faniehome.com"), 
@@ -44,10 +44,8 @@ public class EmailService : IEmailService
                 Body = htmlMessage 
             };
 
-            // Add recipient to the email
             message.To.Add(email);
 
-            // Configure SmtpClient settings
             using (SmtpClient smtpClient = new SmtpClient())
             {
                 smtpClient.Port = 587; 
@@ -65,13 +63,13 @@ public class EmailService : IEmailService
         }
         catch (SmtpException smtpEx)
         {
-            // Handle SMTP-specific errors
+        
             _logger.LogError($"SMTP error sending email: {smtpEx.Message}");
             return false;
         }
         catch (Exception ex)
         {
-            // Handle general errors
+            
             _logger.LogError($"Error sending email: {ex.Message}");
             return false;
         }
