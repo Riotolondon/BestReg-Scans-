@@ -1,10 +1,16 @@
 using BestReg.Data;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
-
+// Initialize Firebase
+FirebaseApp.Create(new AppOptions()
+{
+    Credential = GoogleCredential.FromFile(builder.Configuration["Firebase:ServiceAccountKeyPath"]),
+});
 // Setup database connection string
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
