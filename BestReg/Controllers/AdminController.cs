@@ -20,6 +20,8 @@ namespace BestReg.Controllers
             _roleManager = roleManager;
         }
 
+     
+
         public async Task<IActionResult> Index()
         {
             var model = new AdminUserViewModel
@@ -75,6 +77,12 @@ namespace BestReg.Controllers
             }
 
             return View(model);
+        }
+
+        public async Task<IActionResult> SyncUsers([FromServices] UserManager<ApplicationUser> userManager)
+        {
+            await DbInitializer.SyncExistingUsersToFirebase(userManager);
+            return RedirectToAction("Index", "Admin");
         }
     }
 }

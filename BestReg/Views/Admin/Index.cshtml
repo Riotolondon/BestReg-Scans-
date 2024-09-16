@@ -10,6 +10,9 @@
     <a asp-page="/Account/Register" asp-area="Identity" class="btn btn-primary">Create New User</a>
 </div>
 
+<form asp-action="SyncUsers" method="post">
+    <button type="submit" class="btn btn-primary">Sync Users</button>
+</form>
 
 <table class="table">
     <thead>
