@@ -10,14 +10,29 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Google.Cloud.Firestore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Initialize Firebase
-FirebaseApp.Create(new AppOptions()
+// Load Firebase credentials
+var firebaseCredentialsPath = builder.Configuration["Firebase:CredentialsPath"];
+if (!string.IsNullOrWhiteSpace(firebaseCredentialsPath))
 {
-    Credential = GoogleCredential.GetApplicationDefault(),
-});
+    FirebaseApp.Create(new AppOptions()
+    {
+        Credential = GoogleCredential.FromFile(firebaseCredentialsPath),
+    });
+}
+else
+{
+    throw new ArgumentException("Firebase credentials path is not configured.");
+}
+
+// Initialize Firestore
+FirestoreDb firestoreDb = FirestoreDb.Create("newchilddb");
+
+// Register FirestoreDb with DI
+builder.Services.AddSingleton(firestoreDb);
 
 // Setup database connection string
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -56,6 +71,7 @@ builder.Services.AddSingleton<FirebaseAuthClient>(sp =>
         }
     });
 });
+
 // Configure JWT Bearer for Firebase Authentication
 builder.Services.AddAuthentication(options =>
 {
