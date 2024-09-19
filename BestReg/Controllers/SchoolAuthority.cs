@@ -122,7 +122,7 @@ namespace BestReg.Controllers
             if (!string.IsNullOrEmpty(parentEmail))
             {
                 var emailSubject = $"Your child has {actionType.ToLower()} at school";
-                var emailBody = $"Dear Parent,<br>Your child {user.UserName} has successfully {actionType.ToLower()} at school on {now}.<br>Best Regards,<br>BestReg School";
+                var emailBody = $"Dear Parent,<br>Your child {user.FirstName+" "+user.LastName} has successfully {actionType.ToLower()} at school on {now}.<br>Best Regards,<br>BestReg School";
                 var isEmailSent = await _emailService.SendEmailAsync(parentEmail, emailSubject, emailBody);
 
                 if (!isEmailSent)

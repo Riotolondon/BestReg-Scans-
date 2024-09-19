@@ -1,5 +1,8 @@
+/* Base HTML and Body Styling */
 html {
     font-size: 14px;
+    position: relative;
+    min-height: 100%;
 }
 
 @media (min-width: 768px) {
@@ -8,32 +11,29 @@ html {
     }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-    position: relative;
-    min-height: 100%;
-}
-
 body {
     margin-bottom: 60px;
 }
 
-/* Custom login styles */
-.limiter {
-    width: 100%;
-    margin: 0 auto;
+/* Buttons and Form Elements Focus Styling */
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
+/* Login Page Styling */
+.limiter,
 .container-login100 {
     width: 100%;
-    min-height: 80vh;
+    margin: 0 auto;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
+    min-height: 80vh;
     padding: 15px;
     background: #ffffff;
 }
@@ -42,9 +42,8 @@ body {
     width: 390px;
     background: #fff;
     border-radius: 10px;
-    overflow: hidden;
     padding: 40px 40px 30px;
-    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, .1);
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.1);
 }
 
 .login100-form {
@@ -52,10 +51,8 @@ body {
 }
 
 .login100-form-title {
-    display: block;
     font-size: 24px;
     color: #333;
-    line-height: 1.2;
     text-align: center;
     margin-bottom: 20px;
 }
@@ -70,8 +67,6 @@ body {
 .input100 {
     font-size: 14px;
     color: #555;
-    line-height: 1.2;
-    display: block;
     width: 100%;
     height: 40px;
     background: transparent;
@@ -80,7 +75,6 @@ body {
 
 .focus-input100 {
     position: absolute;
-    display: block;
     width: 100%;
     height: 100%;
     top: 0;
@@ -90,27 +84,23 @@ body {
 
     .focus-input100::before {
         content: "";
-        display: block;
         position: absolute;
         bottom: -2px;
         left: 0;
         width: 0;
         height: 2px;
         background: linear-gradient(to right, #21d4fd, #b721ff);
-        transition: all 0.4s;
+        transition: width 0.4s;
     }
 
     .focus-input100::after {
-        font-size: 15px;
-        color: #999;
-        line-height: 1.2;
         content: attr(data-placeholder);
-        display: block;
-        width: 100%;
         position: absolute;
         top: 16px;
         left: 0;
         padding-left: 5px;
+        font-size: 15px;
+        color: #999;
         transition: all 0.4s;
     }
 
@@ -124,6 +114,7 @@ body {
     width: 100%;
 }
 
+/* Button Styling in Login */
 .container-login100-form-btn {
     display: flex;
     justify-content: center;
@@ -132,53 +123,29 @@ body {
 
 .wrap-login100-form-btn {
     width: 100%;
-    display: block;
+    border-radius: 25px;
     position: relative;
     z-index: 1;
-    border-radius: 25px;
     overflow: hidden;
-}
-
-.login100-form-bgbtn {
-    position: absolute;
-    z-index: -1;
-    width: 300%;
-    height: 100%;
-    background: linear-gradient(to right, #21d4fd, #b721ff, #21d4fd, #b721ff);
-    top: 0;
-    left: -100%;
-    transition: all 0.4s;
 }
 
 .login100-form-btn {
     font-size: 14px;
     color: #fff;
-    line-height: 1.2;
     text-transform: uppercase;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0 20px;
     width: 100%;
     height: 45px;
     background-color: #28a745;
-    border: none;
     border-radius: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     transition: background-color 0.3s ease;
 }
 
     .login100-form-btn:hover {
         background-color: #218838;
-        color: #fff;
     }
-
-.login100-form-bgbtn {
-    display: none;
-}
-
-.wrap-login100-form-btn:hover .login100-form-bgbtn {
-    left: 0;
-}
 
 .text-danger {
     color: #dc3545;
@@ -193,32 +160,22 @@ body {
     padding-top: 30px;
 }
 
-/* Custom styles for the welcome page */
-.video-background {
+/* Welcome Page Styling */
+.video-background, #bgVideo {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden;
-    z-index: -1;
-}
-
-#bgVideo {
-    width: 100%;
-    height: 100%;
     object-fit: cover;
-    position: absolute;
-    top: 0;
-    left: 0;
+    z-index: -1;
 }
 
 .welcome-container {
     position: relative;
-    z-index: 1;
     padding: 50px 20px;
-    color: #fff;
     text-align: center;
+    color: #fff;
 }
 
 .welcome-title {
@@ -232,7 +189,7 @@ body {
     margin-bottom: 40px;
 }
 
-/* Navbar styling */
+/* Navbar Styling */
 .navbar {
     background-color: white;
     padding: 10px 20px;
@@ -253,54 +210,30 @@ body {
 
     .navbar-nav .nav-link:hover {
         color: #4c51bf;
-        text-decoration: none;
     }
 
     .navbar-nav .nav-link.active {
         color: #4c51bf;
     }
 
-        .navbar-nav .nav-link.active::after,
-        .navbar-nav .nav-link:hover::after {
-            content: '';
-            display: block;
-            width: 100%;
-            height: 2px;
-            background-color: #4c51bf;
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            transition: width 0.3s ease;
-        }
+    .navbar-nav .nav-link::after {
+        content: '';
+        display: block;
+        width: 0;
+        height: 2px;
+        background-color: #4c51bf;
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        transition: width 0.3s ease;
+    }
 
+    .navbar-nav .nav-link.active::after,
     .navbar-nav .nav-link:hover::after {
         width: 100%;
     }
 
-    .navbar-nav .nav-link.active::after {
-        width: 100%;
-    }
-
-    .navbar-nav .nav-link::after {
-        width: 0;
-    }
-
-/* Video container */
-.video-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 20px;
-}
-
-    .video-container iframe {
-        max-width: 100%;
-        height: auto;
-        border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    }
-
-/* Modern Card Styling */
+/* Card Styling */
 .card {
     border: none;
     border-radius: 10px;
@@ -314,26 +247,17 @@ body {
     color: #333;
 }
 
-.btn-primary {
+.btn-primary,
+.btn-outline-primary {
     background-color: #4c51bf;
     border-color: #4c51bf;
     transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-    .btn-primary:hover {
+    .btn-primary:hover,
+    .btn-outline-primary:hover {
         background-color: #3742fa;
         border-color: #3742fa;
-    }
-
-.btn-outline-primary {
-    border-color: #4c51bf;
-    color: #4c51bf;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-    .btn-outline-primary:hover {
-        background-color: #4c51bf;
-        color: #fff;
     }
 
 .form-floating .form-control {
@@ -345,21 +269,7 @@ body {
     padding: 0.5rem 0.75rem;
 }
 
-.text-danger {
-    color: #e3342f;
-}
-
-hr {
-    border-top: 1px solid #e5e5e5;
-    margin-top: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.text-muted {
-    color: #6c757d !important;
-}
-
-/* Modern Table Styling */
+/* Table Styling */
 .table-container {
     width: 100%;
     overflow-x: auto;
@@ -371,9 +281,8 @@ hr {
     border-collapse: collapse;
     margin-bottom: 1.5rem;
     background-color: #fff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
-    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
     .table th,
@@ -381,23 +290,17 @@ hr {
         padding: 12px 20px;
         text-align: left;
         border-bottom: 1px solid #e5e5e5;
-        vertical-align: middle;
     }
 
     .table th {
-        background-color: #f8f9fa; /* Light grey background for headers */
+        background-color: #f8f9fa;
         font-weight: 600;
-        color: #333;
         text-transform: uppercase;
         font-size: 0.875rem;
     }
 
-    .table tr:last-child td {
-        border-bottom: none;
-    }
-
 .table-hover tbody tr:hover {
-    background-color: #f1f3f5; /* Slightly darker grey on hover */
+    background-color: #f1f3f5;
 }
 
 .text-primary {
@@ -410,40 +313,29 @@ hr {
         color: #3742fa;
     }
 
-/* Adjust padding for the action buttons */
-.text-end {
-    text-align: right;
-}
-
+/* Action Buttons */
 .btn-action {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     padding: 8px 12px;
     font-size: 0.875rem;
-    font-weight: 500;
     text-transform: uppercase;
     border-radius: 5px;
+    background-color: #4c51bf;
     color: #fff;
-    background-color: #4c51bf; /* Tailwind's indigo color */
     border: none;
     transition: background-color 0.3s ease;
 }
 
     .btn-action:hover {
-        background-color: #3742fa; /* Darker shade on hover */
+        background-color: #3742fa;
     }
 
-    .btn-action + .btn-action {
-        margin-left: 10px; /* Space between multiple action buttons */
-    }
-
-/* Add User button styling */
 .btn-add-user {
-    background-color: #4c51bf; /* Tailwind's indigo color */
+    background-color: #4c51bf;
     border-color: #4c51bf;
     color: #fff;
-    font-weight: 500;
     padding: 10px 20px;
     border-radius: 8px;
     transition: background-color 0.3s ease;
@@ -454,10 +346,7 @@ hr {
         border-color: #3742fa;
     }
 
-/*---------------------------------------------------------------------break-----------------------------------------------------------------------------------------------*/
-
-/* Privacy Policy Page Styles */
-
+/* Privacy Policy Page */
 .privacy-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -466,14 +355,12 @@ hr {
     .privacy-container h1 {
         font-size: 2.5rem;
         font-weight: 700;
-        color: #333;
         margin-bottom: 20px;
     }
 
     .privacy-container p.lead {
         font-size: 1.25rem;
         font-weight: 300;
-        color: #555;
         margin-bottom: 20px;
     }
 
@@ -485,13 +372,13 @@ hr {
         .privacy-container ul.privacy-list li {
             margin-bottom: 10px;
             font-size: 1rem;
-            color: #555;
         }
 
+/* Image Gallery */
 .image-gallery {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-gap: 15px;
+    gap: 15px;
 }
 
     .image-gallery img {
@@ -501,14 +388,9 @@ hr {
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
-/* Responsive Design Adjustments */
 @media (max-width: 768px) {
     .privacy-container h1 {
         font-size: 2rem;
-    }
-
-    .privacy-container p.lead {
-        font-size: 1.1rem;
     }
 
     .image-gallery {
@@ -516,35 +398,29 @@ hr {
     }
 }
 
-/* Mission Section Styles */
+/* Mission Section */
 .mission-container {
-    padding: 60px 20px; /* Increase padding for better spacing */
-    background-color: #f8f9fa; /* Light background to distinguish the section */
+    padding: 60px 20px;
+    background-color: #f8f9fa;
     border-top: 1px solid #e5e5e5;
-    overflow: hidden; /* Ensure no content is cut off */
 }
 
 .mission-title {
     font-size: 2.5rem;
     font-weight: 700;
-    color: #333;
     margin-bottom: 20px;
-    line-height: 1.2; /* Adjust line-height for better readability */
 }
 
 .mission-container p {
     font-size: 1.1rem;
-    color: #555;
     margin-bottom: 20px;
     line-height: 1.6;
-    font-family: Arial, sans-serif; /* Ensure consistency with existing font */
-    text-align: justify; /* Justify the text for uniform appearance */
+    text-align: justify;
 }
 
 .stats {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
     gap: 20px;
 }
@@ -556,7 +432,7 @@ hr {
 .stat-value {
     font-size: 3rem;
     font-weight: 700;
-    color: #4c51bf; /* Tailwind's indigo color */
+    color: #4c51bf;
 }
 
 .stat-description {
@@ -568,10 +444,85 @@ hr {
     .mission-title {
         font-size: 2rem;
     }
-
-    .stat-value {
-        font-size: 2.5rem;
-    }
 }
 
+/* Register Page */
+.container-register {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 15px;
+}
 
+.card-register {
+    max-width: 450px;
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 40px 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+    font-size: 1.75rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* Manage Account Page */
+.manage-container {
+    padding: 30px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.manage-layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.manage-sidebar {
+    flex: 0 0 250px;
+    padding-right: 20px;
+}
+
+.manage-nav {
+    list-style: none;
+}
+
+    .manage-nav .nav-link {
+        display: block;
+        padding: 10px 15px;
+        background-color: #f8f9fa;
+        margin-bottom: 10px;
+        color: #4c51bf;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+    }
+
+        .manage-nav .nav-link:hover,
+        .manage-nav .nav-link.active {
+            background-color: #4c51bf;
+            color: white;
+        }
+
+.manage-content {
+    flex: 1;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .manage-layout {
+        flex-direction: column;
+    }
+
+    .manage-sidebar {
+        flex: 1;
+        padding-right: 0;
+    }
+}

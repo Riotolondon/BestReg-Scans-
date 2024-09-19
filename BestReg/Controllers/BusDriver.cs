@@ -95,7 +95,7 @@ namespace BestReg.Controllers
             if (!string.IsNullOrEmpty(parentEmail))
             {
                 var emailSubject = $"Bus {actionType} notification";
-                var emailBody = $"Dear Parent,<br>Your child {user.UserName} has successfully {actionType} from the bus on {now}.<br>Best Regards,<br>BestReg School Bus";
+                var emailBody = $"Dear Parent,<br>Your child {user.FirstName+" "+user.LastName} has successfully {actionType} from the bus on {now}.<br>Best Regards,<br>BestReg School Bus";
 
                 var isEmailSent = await _emailService.SendEmailAsync(parentEmail, emailSubject, emailBody);
 
