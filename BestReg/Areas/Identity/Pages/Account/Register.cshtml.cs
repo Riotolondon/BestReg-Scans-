@@ -15,6 +15,8 @@ using System.Net.Mail;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Google.Cloud.Firestore;
+using FirebaseAdmin.Auth;
 
 namespace BestReg.Areas.Identity.Pages.Account
 {
@@ -25,19 +27,22 @@ namespace BestReg.Areas.Identity.Pages.Account
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailService _emailService;
+        private readonly SyncService _syncService; // Inject SyncService
 
         public RegisterModel(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             RoleManager<IdentityRole> roleManager,
             ILogger<RegisterModel> logger,
-            IEmailService emailService)
+            IEmailService emailService,
+            SyncService syncService) // Add SyncService to constructor
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
             _logger = logger;
             _emailService = emailService;
+            _syncService = syncService; // Assign SyncService
         }
 
         [BindProperty]
@@ -94,6 +99,19 @@ namespace BestReg.Areas.Identity.Pages.Account
             return Page();
         }
 
+        private async Task CreateUserInFirebase(string email, string password)
+        {
+            var userRecordArgs = new UserRecordArgs()
+            {
+                Email = email,
+                EmailVerified = false,
+                Password = password,
+                Disabled = false,
+            };
+
+            var userRecord = await FirebaseAuth.DefaultInstance.CreateUserAsync(userRecordArgs);
+            Console.WriteLine($"Successfully created new user: {userRecord.Uid}");
+        }
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
@@ -109,13 +127,16 @@ namespace BestReg.Areas.Identity.Pages.Account
                     FirstName = Input.FirstName,
                     LastName = Input.LastName,
                     IDNumber = Input.IDNumber,
-                    EmailConfirmed = true // Marking email confirmation true for now since email confirmation is giving me problems.
+                    EmailConfirmed = true
                 };
 
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
                 if (result.Succeeded)
                 {
+                    // Create user in Firebase
+                    await CreateUserInFirebase(Input.Email, Input.Password);
+
                     // Assign the selected role to the user
                     if (!string.IsNullOrEmpty(Input.SelectedRole))
                     {
@@ -126,7 +147,6 @@ namespace BestReg.Areas.Identity.Pages.Account
                             return Page();
                         }
 
-                        // Additional logic based on role selection (optional)
                         if (Input.SelectedRole == "Student")
                         {
                             var qrCodeBytes = _emailService.GenerateQrCode(user.IDNumber);
@@ -137,8 +157,15 @@ namespace BestReg.Areas.Identity.Pages.Account
 
                     _logger.LogInformation("User created a new account with password.");
 
+                    // Save user to Firestore
+                    await SaveUserToFirestore(user);
+
                     // Automatically sign in the user after registration
                     await _signInManager.SignInAsync(user, isPersistent: false);
+
+                    // Trigger data sync from SQL to Firebase
+                    await _syncService.SyncSqlToFirebaseAsync();
+
                     return LocalRedirect(returnUrl);
                 }
 
@@ -148,55 +175,26 @@ namespace BestReg.Areas.Identity.Pages.Account
                 }
             }
 
-            // Redisplay the form if we got this far (meaning something failed)
             return Page();
         }
 
-
-        private async Task<bool> SendEmailAsync(string email, string subject, string confirmLink)
+        private async Task SaveUserToFirestore(ApplicationUser user)
         {
-            try
+            var firestoreDb = FirestoreDb.Create("newchilddb");
+            var usersCollection = firestoreDb.Collection("users");
+            var userDocument = usersCollection.Document(user.Id);
+
+            var userData = new
             {
-                //MailMessage message = new MailMessage();
-                //SmtpClient smtpClient = new SmtpClient();
-                //message.From = new MailAddress("dutengagement@outlook.com");
-                //message.To.Add(email);
-                //message.Subject = subject;
-                //message.IsBodyHtml = true;
-                //message.Body = confirmLink;
+                user.UserName,
+                user.Email,
+                user.FirstName,
+                user.LastName,
+                user.IDNumber,
+                user.QrCodeBase64
+            };
 
-                //smtpClient.Port = 587;
-                //smtpClient.Host = "smtp.outlook.com";
-                //smtpClient.EnableSsl = true;
-                //smtpClient.UseDefaultCredentials = false;
-                //smtpClient.Credentials = new NetworkCredential("dutengagement@outlook.com", "Admin@Dut01");
-                //smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
-                //smtpClient.Send(message);
-
-                MailMessage message = new MailMessage();
-                SmtpClient smtpClient = new SmtpClient();
-                message.From = new MailAddress("Go4toro@faniehome.com");
-                message.To.Add(email);
-                message.Subject = subject;
-                message.IsBodyHtml = true;
-                message.Body = confirmLink;
-
-                smtpClient.Port = 587;
-                smtpClient.Host = "smtp.office365.com";
-
-                smtpClient.EnableSsl = true;
-                smtpClient.UseDefaultCredentials = false;
-                smtpClient.Credentials = new NetworkCredential("Go4toro@faniehome.com", "Mossgert@2018");
-                smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
-                smtpClient.Send(message);
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred while sending the email: {Message}", ex.Message);
-                return false;
-            }
+            await userDocument.SetAsync(userData);
         }
     }
 }

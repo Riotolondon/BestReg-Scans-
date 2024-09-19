@@ -9,7 +9,10 @@
   <ItemGroup>
     <PackageReference Include="BarCode" Version="2024.8.12" />
     <PackageReference Include="FirebaseAdmin" Version="3.0.1" />
+    <PackageReference Include="FirebaseAuthentication.net" Version="4.1.0" />
+    <PackageReference Include="Google.Cloud.Firestore" Version="3.8.0" />
     <PackageReference Include="MailKit" Version="4.7.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
@@ -20,9 +23,14 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.5" />
     <PackageReference Include="MimeKit" Version="4.7.1" />
+    <PackageReference Include="QRCoder" Version="1.6.0" />
     <PackageReference Include="ZXing.Net" Version="0.16.9" />
     <!-- Removed IronBarCode reference -->
     <!-- <PackageReference Include="IronBarCode" Version="2023.9.0" /> -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Secrets\" />
   </ItemGroup>
 
 </Project>

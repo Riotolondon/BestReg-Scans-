@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using FirebaseAdmin.Auth;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,6 +24,35 @@ namespace BestReg.Data
             {
                 await SeedAdminUserAsync(userManager, roleManager);
             }
+        }
+        public static async Task SyncExistingUsersToFirebase(UserManager<ApplicationUser> userManager)
+        {
+            var users = userManager.Users.ToList();
+            foreach (var user in users)
+            {
+                try
+                {
+                    await CreateUserInFirebase(user.Email, "DefaultPassword123!"); // Use a secure method to set passwords
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error creating user {user.Email}: {ex.Message}");
+                }
+            }
+        }
+
+        private static async Task CreateUserInFirebase(string email, string password)
+        {
+            var userRecordArgs = new UserRecordArgs()
+            {
+                Email = email,
+                EmailVerified = false,
+                Password = password,
+                Disabled = false,
+            };
+
+            var userRecord = await FirebaseAuth.DefaultInstance.CreateUserAsync(userRecordArgs);
+            Console.WriteLine($"Successfully created new user: {userRecord.Uid}");
         }
 
         private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
@@ -100,4 +130,5 @@ namespace BestReg.Data
         }
 
     }
+
 }

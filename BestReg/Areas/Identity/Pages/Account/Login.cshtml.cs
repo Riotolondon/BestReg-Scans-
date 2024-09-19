@@ -12,7 +12,7 @@ using BestReg.Data;
 namespace BestReg.Areas.Identity.Pages.Account
 {
     public class LoginModel : PageModel
-    {
+    {  
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
