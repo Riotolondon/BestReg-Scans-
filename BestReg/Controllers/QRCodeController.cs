@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System;
+using System.Linq;
 
 [Authorize]
 public class QrCodeController : Controller

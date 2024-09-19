@@ -22,7 +22,6 @@ namespace BestReg.Controllers
             _emailService = emailService;
         }
 
-        // GET: SchoolAuthority/Index
         public async Task<IActionResult> Index(string error = null, string success = null)
         {
             ViewBag.Error = error;
@@ -51,7 +50,6 @@ namespace BestReg.Controllers
             return await HandleSchoolCheckInOut(qrCodeData, DateTime.Now, "Check-out");
         }
 
-        // Helper method to handle both check-in and check-out
         private async Task<IActionResult> HandleSchoolCheckInOut(string qrCodeData, DateTime now, string actionType)
         {
             if (string.IsNullOrWhiteSpace(qrCodeData))
@@ -71,7 +69,6 @@ namespace BestReg.Controllers
             var attendanceRecord = await _context.AttendanceRecords
                 .FirstOrDefaultAsync(a => a.UserId == user.Id && a.AttendanceDate == today);
 
-            // If no record exists for today and it's a check-out, disallow it
             if (attendanceRecord == null && actionType == "Check-out")
             {
                 _logger.LogWarning($"User {user.UserName} cannot check out without checking in.");
@@ -80,7 +77,6 @@ namespace BestReg.Controllers
 
             if (attendanceRecord == null)
             {
-                // Create a new attendance record for check-in
                 if (actionType == "Check-in")
                 {
                     attendanceRecord = new AttendanceRecord
@@ -94,7 +90,6 @@ namespace BestReg.Controllers
             }
             else
             {
-                // Check-in validation
                 if (actionType == "Check-in")
                 {
                     if (attendanceRecord.SchoolCheckIn.HasValue)
@@ -104,7 +99,6 @@ namespace BestReg.Controllers
                     }
                     attendanceRecord.SchoolCheckIn = now;
                 }
-                // Check-out validation
                 else if (actionType == "Check-out")
                 {
                     if (!attendanceRecord.SchoolCheckIn.HasValue)
@@ -124,7 +118,6 @@ namespace BestReg.Controllers
 
             await _context.SaveChangesAsync();
 
-            // Send email notification to parent
             var parentEmail = user.Email;
             if (!string.IsNullOrEmpty(parentEmail))
             {
@@ -144,6 +137,16 @@ namespace BestReg.Controllers
 
             _logger.LogInformation($"{actionType} recorded successfully for {user.UserName}.");
             return RedirectToAction("Index", new { success = $"{actionType} recorded successfully for {user.UserName}." });
+        }
+
+        public async Task<IActionResult> GetAttendanceData()
+        {
+            var today = DateTime.Now.Date;
+            var attendanceData = await _context.AttendanceRecords
+                .Where(a => a.AttendanceDate == today)
+                .Select(a => new { a.SchoolCheckIn, a.SchoolCheckOut, a.User.UserName })
+                .ToListAsync();
+            return Json(attendanceData);
         }
     }
 }

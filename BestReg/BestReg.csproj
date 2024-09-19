@@ -23,6 +23,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.5" />
     <PackageReference Include="MimeKit" Version="4.7.1" />
+    <PackageReference Include="QRCoder" Version="1.6.0" />
     <PackageReference Include="ZXing.Net" Version="0.16.9" />
     <!-- Removed IronBarCode reference -->
     <!-- <PackageReference Include="IronBarCode" Version="2023.9.0" /> -->
