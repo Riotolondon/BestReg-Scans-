@@ -56,6 +56,7 @@ builder.Services.AddSingleton<RoleSyncService>(); // Register RoleSyncService
 // Add Firebase Authentication services
 builder.Services.AddSingleton<IFirebaseAuthService, FirebaseAuthService>();
 builder.Services.AddSingleton<IFirebaseTokenValidator, FirebaseTokenValidator>();
+builder.Services.AddSingleton<FirestoreAttendanceService>();
 
 // Register FirebaseAuthClient
 builder.Services.AddSingleton<FirebaseAuthClient>(sp =>

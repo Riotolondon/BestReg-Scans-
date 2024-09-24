@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace BestReg.Controllers
 {
-    [Authorize(Roles = "BusDriver")]
+    [Authorize(Roles = "BusDriver,Student")]
     public class BusDriverController : Controller
     {
         private readonly ApplicationDbContext _context;

@@ -1,33 +1,59 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Google.Cloud.Firestore;
 
 namespace BestReg.Data
 {
+    [FirestoreData]
     public class AttendanceRecord
     {
         [Key]
+        [FirestoreDocumentId]
         public int Id { get; set; }
 
         [Required]
+        [FirestoreProperty]
         public string UserId { get; set; }
 
         [Required]
+        [FirestoreProperty]
         public DateTime AttendanceDate { get; set; }
-        //student is picked up and the scanning starts there
+
+        [FirestoreProperty]
         public DateTime? BusCheckInHome { get; set; }
-        //student checks out of the bus
+
+        [FirestoreProperty]
         public DateTime? BusCheckOutSchool { get; set; }
-        //student checks in the school via the security
+
+        [FirestoreProperty]
         public DateTime? SchoolCheckIn { get; set; }
-        //student checks out of school via the security
+
+        [FirestoreProperty]
         public DateTime? SchoolCheckOut { get; set; }
-        //student checks in the bus after school 
+
+        [FirestoreProperty]
         public DateTime? BusCheckInSchool { get; set; }
-        //student checks out of the bus at home when being dropped off
+
+        [FirestoreProperty]
         public DateTime? BusCheckOutHome { get; set; }
 
         [ForeignKey("UserId")]
         public ApplicationUser User { get; set; }
+
+        public Dictionary<string, object> ToFirestoreDocument()
+        {
+            return new Dictionary<string, object>
+            {
+                ["id"] = Id,
+                ["userId"] = UserId,
+                ["attendanceDate"] = AttendanceDate,
+                ["busCheckInHome"] = BusCheckInHome,
+                ["busCheckOutSchool"] = BusCheckOutSchool,
+                ["schoolCheckIn"] = SchoolCheckIn,
+                ["schoolCheckOut"] = SchoolCheckOut,
+                ["busCheckInSchool"] = BusCheckInSchool,
+                ["busCheckOutHome"] = BusCheckOutHome
+            };
+        }
     }
 }

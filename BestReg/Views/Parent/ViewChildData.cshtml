@@ -1,30 +1,98 @@
-﻿@* @model List<ChildDataViewModel>
+﻿@model IEnumerable<dynamic>
 
-<h2>Child's Past Data</h2>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Date</th>
-            <th>Description</th>
-            <th>Details</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
+<div class="card mt-4">
+    <div class="card-body">
+        <h4 class="card-title">Recent Activity</h4>
+        @if (Model != null && Model.Any())
         {
-            <tr>
-                <td>@item.Date</td>
-                <td>@item.Description</td>
-                <td>@item.Details</td>
-            </tr>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Check-In Home</th>
+                        <th>Check-Out School</th>
+                        <th>Check-In School</th>
+                        <th>Check-Out Home</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var record in Model)
+                    {
+                        <tr>
+                            <td>@(record.User?.UserName ?? "Unknown")</td>
+                            <td>@(record.BusCheckInHome?.ToString("HH:mm") ?? "-")</td>
+                            <td>@(record.BusCheckOutSchool?.ToString("HH:mm") ?? "-")</td>
+                            <td>@(record.BusCheckInSchool?.ToString("HH:mm") ?? "-")</td>
+                            <td>@(record.BusCheckOutHome?.ToString("HH:mm") ?? "-")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         }
-    </tbody>
-</table>
+        else
+        {
+            <p>No recent activity to display.</p>
+        }
+    </div>
+</div>
 
- *@
+<div class="card mt-4">
+    <div class="card-body">
+        <h4 class="card-title">Attendance Statistics</h4>
+        <canvas id="attendanceChart" width="400" height="200"></canvas>
+    </div>
+</div>
 
-
- <h3>
-     Child past data/report will be in this page
- </h3>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            fetch('/BusDriver/GetAttendanceData')
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('attendanceChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: data.map(d => d.userName),
+                            datasets: [
+                                {
+                                    label: 'Check-In Home',
+                                    data: data.map(d => d.busCheckInHome ? new Date(d.busCheckInHome).getHours() + new Date(d.busCheckInHome).getMinutes() / 60 : null),
+                                    backgroundColor: 'rgba(75, 192, 192, 0.6)'
+                                },
+                                {
+                                    label: 'Check-Out School',
+                                    data: data.map(d => d.busCheckOutSchool ? new Date(d.busCheckOutSchool).getHours() + new Date(d.busCheckOutSchool).getMinutes() / 60 : null),
+                                    backgroundColor: 'rgba(255, 99, 132, 0.6)'
+                                },
+                                {
+                                    label: 'Check-In School',
+                                    data: data.map(d => d.busCheckInSchool ? new Date(d.busCheckInSchool).getHours() + new Date(d.busCheckInSchool).getMinutes() / 60 : null),
+                                    backgroundColor: 'rgba(54, 162, 235, 0.6)'
+                                },
+                                {
+                                    label: 'Check-Out Home',
+                                    data: data.map(d => d.busCheckOutHome ? new Date(d.busCheckOutHome).getHours() + new Date(d.busCheckOutHome).getMinutes() / 60 : null),
+                                    backgroundColor: 'rgba(255, 206, 86, 0.6)'
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 24,
+                                    title: {
+                                        display: true,
+                                        text: 'Time (24-hour format)'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                });
+        });
+    </script>
+}
