@@ -126,7 +126,11 @@ namespace BestReg.Controllers
                     a.User.UserName
                 })
                 .ToListAsync();
+
+            _logger.LogInformation($"Retrieved {attendanceData.Count} attendance records for today.");
+
             return Json(attendanceData);
         }
+
     }
 }

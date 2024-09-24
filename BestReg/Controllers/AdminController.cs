@@ -3,6 +3,7 @@ using BestReg.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -11,16 +12,18 @@ namespace BestReg.Controllers
     [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
+        private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
-        public AdminController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+        public AdminController(ApplicationDbContext context,UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
+            _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
         }
 
-     
+
 
         public async Task<IActionResult> Index()
         {
@@ -79,10 +82,35 @@ namespace BestReg.Controllers
             return View(model);
         }
 
+
+
         public async Task<IActionResult> SyncUsers([FromServices] UserManager<ApplicationUser> userManager)
         {
             await DbInitializer.SyncExistingUsersToFirebase(userManager);
             return RedirectToAction("Index", "Admin");
         }
+
+
+        public async Task<IActionResult> ViewAllAttendance()
+        {
+            var attendanceRecords = await _context.AttendanceRecords
+                .Include(a => a.User)
+                .OrderByDescending(a => a.AttendanceDate)
+                .Select(a => new HistoricalAttendanceRecord
+                {
+                    UserName = a.User.UserName,
+                    AttendanceDate = a.AttendanceDate,
+                    BusCheckInHome = a.BusCheckInHome,
+                    BusCheckOutSchool = a.BusCheckOutSchool,
+                    SchoolCheckIn = a.SchoolCheckIn,
+                    SchoolCheckOut = a.SchoolCheckOut,
+                    BusCheckInSchool = a.BusCheckInSchool,
+                    BusCheckOutHome = a.BusCheckOutHome
+                })
+                .ToListAsync();
+
+            return View(attendanceRecords);
+        }
     }
 }
+

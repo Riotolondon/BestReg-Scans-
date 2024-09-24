@@ -1,0 +1,126 @@
+﻿@model IEnumerable<BestReg.Models.HistoricalAttendanceRecord>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <h4 class="card-title">All Attendance Records</h4>
+        <div class="mb-3">
+            <label for="viewSelector" class="form-label">Select View:</label>
+            <select id="viewSelector" class="form-select">
+                <option value="table">Table View</option>
+                <option value="chart">Chart View</option>
+            </select>
+        </div>
+        <div id="attendanceTable" style="display: block;">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>User</th>
+                        <th>Check-In Home</th>
+                        <th>Check-Out School</th>
+                        <th>Check-In School</th>
+                        <th>Check-Out Home</th>
+                        <th>Check-In School (Authority)</th>
+                        <th>Check-Out School (Authority)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var record in Model)
+                    {
+                        <tr>
+                            <td>@record.AttendanceDate.ToString("yyyy-MM-dd")</td>
+                            <td>@record.UserName</td>
+                            <td>@(record.BusCheckInHome?.ToString("HH:mm") ?? "-")</td>
+                            <td>@(record.BusCheckOutSchool?.ToString("HH:mm") ?? "-")</td>
+                            <td>@(record.BusCheckInSchool?.ToString("HH:mm") ?? "-")</td>
+                            <td>@(record.BusCheckOutHome?.ToString("HH:mm") ?? "-")</td>
+                            <td>@(record.SchoolCheckIn?.ToString("HH:mm") ?? "-")</td>
+                            <td>@(record.SchoolCheckOut?.ToString("HH:mm") ?? "-")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div id="attendanceChart" style="display: none;">
+            <canvas id="attendancePieChart" width="400" height="400"></canvas>
+            <div id="chartMetadata" class="mt-3 d-flex justify-content-around">
+                <p>Total Records: @Model.Count()</p>
+                <p>Average Check-In Time: @Model.Average(r => r.BusCheckInHome?.Hour ?? 0):00</p>
+                <p>Average Check-Out Time: @Model.Average(r => r.BusCheckOutHome?.Hour ?? 0):00</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const viewSelector = document.getElementById('viewSelector');
+            const attendanceTable = document.getElementById('attendanceTable');
+            const attendanceChart = document.getElementById('attendanceChart');
+
+            viewSelector.addEventListener('change', function () {
+                if (viewSelector.value === 'chart') {
+                    attendanceTable.style.display = 'none';
+                    attendanceChart.style.display = 'block';
+                    renderAttendancePieChart();
+                } else {
+                    attendanceTable.style.display = 'block';
+                    attendanceChart.style.display = 'none';
+                }
+            });
+
+            function renderAttendancePieChart() {
+                const ctx = document.getElementById('attendancePieChart').getContext('2d');
+                const attendanceData = {
+                    labels: ['Check-In Home', 'Check-Out School', 'Check-In School', 'Check-Out Home'],
+                    datasets: [{
+                        data: [
+        @Model.Count(r => r.BusCheckInHome.HasValue),
+        @Model.Count(r => r.BusCheckOutSchool.HasValue),
+        @Model.Count(r => r.BusCheckInSchool.HasValue),
+        @Model.Count(r => r.BusCheckOutHome.HasValue)
+                                ],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                };
+
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: attendanceData,
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        const label = context.label || '';
+                                        const value = context.raw || 0;
+                                        return `${label}: ${value}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+}
