@@ -1,30 +1,284 @@
-﻿@* @model List<ChildDataViewModel>
+﻿@model AttendanceViewModel
 
-<h2>Child's Past Data</h2>
+<div class="card mt-4">
+    <div class="card-body">
+        <h4 class="card-title">Child's Attendance Data</h4>
+        <button id="toggleViewButton" class="btn btn-secondary">Switch to School Authority View</button>
+        <div id="activityTableContainer">
+            <div id="busDriverTable">
+                <h5>Bus Driver Data</h5>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Check-In Home</th>
+                            <th>Check-Out School</th>
+                            <th>Check-In School</th>
+                            <th>Check-Out Home</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var record in Model.BusDriverRecords)
+                        {
+                            <tr>
+                                <td>@record.UserName</td>
+                                <td>@(record.BusCheckInHome?.ToString("HH:mm") ?? "-")</td>
+                                <td>@(record.BusCheckOutSchool?.ToString("HH:mm") ?? "-")</td>
+                                <td>@(record.BusCheckInSchool?.ToString("HH:mm") ?? "-")</td>
+                                <td>@(record.BusCheckOutHome?.ToString("HH:mm") ?? "-")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <canvas id="busDriverChart" width="400" height="200"></canvas>
+            </div>
+            <div id="schoolAuthorityTable" style="display:none;">
+                <h5>School Authority Data</h5>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Check-In School</th>
+                            <th>Check-Out School</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var record in Model.SchoolAuthorityRecords)
+                        {
+                            <tr>
+                                <td>@record.UserName</td>
+                                <td>@(record.SchoolCheckIn?.ToString("HH:mm") ?? "-")</td>
+                                <td>@(record.SchoolCheckOut?.ToString("HH:mm") ?? "-")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <canvas id="schoolAuthorityChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Date</th>
-            <th>Description</th>
-            <th>Details</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.Date</td>
-                <td>@item.Description</td>
-                <td>@item.Details</td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div class="card mt-4">
+    <div class="card-body">
+        <h4 class="card-title">Attendance History</h4>
+        <button id="toggleHistoryViewButton" class="btn btn-secondary">Toggle Graph/Table View</button>
+        <div id="historyTable" style="display: block;">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Check-In Home</th>
+                        <th>Check-Out School</th>
+                        <th>Check-In School</th>
+                        <th>Check-Out Home</th>
+                        <th>Check-In School (Authority)</th>
+                        <th>Check-Out School (Authority)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var record in Model.HistoricalRecords)
+                    {
+                        <tr>
+                            <td>@record.AttendanceDate.ToString("yyyy-MM-dd")</td>
+                            <td>@(record.BusCheckInHome?.ToString("HH:mm") ?? "-")</td>
+                            <td>@(record.BusCheckOutSchool?.ToString("HH:mm") ?? "-")</td>
+                            <td>@(record.BusCheckInSchool?.ToString("HH:mm") ?? "-")</td>
+                            <td>@(record.BusCheckOutHome?.ToString("HH:mm") ?? "-")</td>
+                            <td>@(record.SchoolCheckIn?.ToString("HH:mm") ?? "-")</td>
+                            <td>@(record.SchoolCheckOut?.ToString("HH:mm") ?? "-")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div id="historyChart" style="display: none;">
+            <canvas id="historicalChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+</div>
 
- *@
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleViewButton = document.getElementById('toggleViewButton');
+            const toggleHistoryViewButton = document.getElementById('toggleHistoryViewButton');
+            const busDriverTable = document.getElementById('busDriverTable');
+            const schoolAuthorityTable = document.getElementById('schoolAuthorityTable');
+            const historyTable = document.getElementById('historyTable');
+            const historyChart = document.getElementById('historyChart');
+            let currentView = 'busDriver';
+            let historyView = 'table';
 
+            toggleViewButton.addEventListener('click', function () {
+                if (currentView === 'busDriver') {
+                    busDriverTable.style.display = 'none';
+                    schoolAuthorityTable.style.display = 'block';
+                    toggleViewButton.textContent = 'Switch to Bus Driver View';
+                    currentView = 'schoolAuthority';
+                    renderSchoolAuthorityChart();
+                } else {
+                    busDriverTable.style.display = 'block';
+                    schoolAuthorityTable.style.display = 'none';
+                    toggleViewButton.textContent = 'Switch to School Authority View';
+                    currentView = 'busDriver';
+                    renderBusDriverChart();
+                }
+            });
 
- <h3>
-     Child past data/report will be in this page
- </h3>
+            toggleHistoryViewButton.addEventListener('click', function () {
+                if (historyView === 'table') {
+                    historyTable.style.display = 'none';
+                    historyChart.style.display = 'block';
+                    toggleHistoryViewButton.textContent = 'Switch to Table View';
+                    historyView = 'chart';
+                    renderHistoricalChart();
+                } else {
+                    historyTable.style.display = 'block';
+                    historyChart.style.display = 'none';
+                    toggleHistoryViewButton.textContent = 'Switch to Graph View';
+                    historyView = 'table';
+                }
+            });
+
+            function renderBusDriverChart() {
+                const ctx = document.getElementById('busDriverChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: @Html.Raw(Json.Serialize(Model.BusDriverRecords.Select(r => r.UserName))),
+                        datasets: [
+                            {
+                                label: 'Check-In Home',
+                                data: @Html.Raw(Json.Serialize(Model.BusDriverRecords.Select(r => r.BusCheckInHome?.Hour ?? 0))),
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Check-Out School',
+                                data: @Html.Raw(Json.Serialize(Model.BusDriverRecords.Select(r => r.BusCheckOutSchool?.Hour ?? 0))),
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Check-In School',
+                                data: @Html.Raw(Json.Serialize(Model.BusDriverRecords.Select(r => r.BusCheckInSchool?.Hour ?? 0))),
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Check-Out Home',
+                                data: @Html.Raw(Json.Serialize(Model.BusDriverRecords.Select(r => r.BusCheckOutHome?.Hour ?? 0))),
+                                backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                                borderColor: 'rgba(255, 206, 86, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderSchoolAuthorityChart() {
+                const ctx = document.getElementById('schoolAuthorityChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: @Html.Raw(Json.Serialize(Model.SchoolAuthorityRecords.Select(r => r.UserName))),
+                        datasets: [
+                            {
+                                label: 'Check-In School',
+                                data: @Html.Raw(Json.Serialize(Model.SchoolAuthorityRecords.Select(r => r.SchoolCheckIn?.Hour ?? 0))),
+                                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                                borderColor: 'rgba(153, 102, 255, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Check-Out School',
+                                data: @Html.Raw(Json.Serialize(Model.SchoolAuthorityRecords.Select(r => r.SchoolCheckOut?.Hour ?? 0))),
+                                backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                                borderColor: 'rgba(255, 159, 64, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderHistoricalChart() {
+                const ctx = document.getElementById('historicalChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: @Html.Raw(Json.Serialize(Model.HistoricalRecords.Select(r => r.AttendanceDate.ToString("yyyy-MM-dd")))),
+                        datasets: [
+                            {
+                                label: 'Check-In Home',
+                                data: @Html.Raw(Json.Serialize(Model.HistoricalRecords.Select(r => r.BusCheckInHome?.Hour ?? 0))),
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                fill: false
+                            },
+                            {
+                                label: 'Check-Out School',
+                                data: @Html.Raw(Json.Serialize(Model.HistoricalRecords.Select(r => r.BusCheckOutSchool?.Hour ?? 0))),
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                fill: false
+                            },
+                            {
+                                label: 'Check-In School',
+                                data: @Html.Raw(Json.Serialize(Model.HistoricalRecords.Select(r => r.BusCheckInSchool?.Hour ?? 0))),
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                fill: false
+                            },
+                            {
+                                label: 'Check-Out Home',
+                                data: @Html.Raw(Json.Serialize(Model.HistoricalRecords.Select(r => r.BusCheckOutHome?.Hour ?? 0))),
+                                borderColor: 'rgba(255, 206, 86, 1)',
+                                fill: false
+                            },
+                            {
+                                label: 'Check-In School (Authority)',
+                                data: @Html.Raw(Json.Serialize(Model.HistoricalRecords.Select(r => r.SchoolCheckIn?.Hour ?? 0))),
+                                borderColor: 'rgba(153, 102, 255, 1)',
+                                fill: false
+                            },
+                            {
+                                label: 'Check-Out School (Authority)',
+                                data: @Html.Raw(Json.Serialize(Model.HistoricalRecords.Select(r => r.SchoolCheckOut?.Hour ?? 0))),
+                                borderColor: 'rgba(255, 159, 64, 1)',
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Initial render
+            renderBusDriverChart();
+        });
+    </script>
+}

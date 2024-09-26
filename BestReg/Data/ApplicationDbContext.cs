@@ -10,6 +10,7 @@ namespace BestReg.Data
         {
         }
         public DbSet<AttendanceRecord> AttendanceRecords { get; set; }
+    
 
     }
 }

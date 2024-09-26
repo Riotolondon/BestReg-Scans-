@@ -8,19 +8,22 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using System;
 using System.Linq;
+using BestReg.Services;
 
-[Authorize]
+[Authorize(Roles = "Admin,SchoolAuthority,BusDriver,Parent,Student")]
 public class QrCodeController : Controller
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly FirestoreAttendanceService _attendanceService;
     private readonly ApplicationDbContext _context;
     private readonly ILogger<QrCodeController> _logger;
 
-    public QrCodeController(UserManager<ApplicationUser> userManager, ApplicationDbContext context, ILogger<QrCodeController> logger)
+    public QrCodeController(UserManager<ApplicationUser> userManager, ApplicationDbContext context, ILogger<QrCodeController> logger, FirestoreAttendanceService attendanceService)
     {
         _userManager = userManager;
         _context = context;
         _logger = logger;
+        _attendanceService = attendanceService;
     }
 
     // GET: /QrCode/ShowQrCode
@@ -51,7 +54,6 @@ public class QrCodeController : Controller
         return File(qrCodeBytes, "image/png", "QRCode.png");
     }
 
-
     // Action to display the QR code scanning page
     public IActionResult ScanQRCode(string scanType, string role)
     {
@@ -65,7 +67,6 @@ public class QrCodeController : Controller
         ViewBag.Role = role;
         return View();
     }
-
 
     [HttpPost]
     public async Task<IActionResult> ProcessQRCode(string qrCodeData, string scanType, string role)
@@ -123,5 +124,4 @@ public class QrCodeController : Controller
         _logger.LogWarning($"Invalid scanType or role: {scanType}, {role}. Redirecting to the Index page.");
         return RedirectToAction("Index", "Home");
     }
-
 }

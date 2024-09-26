@@ -53,7 +53,7 @@ namespace BestReg.Data
 
             var userRecord = await FirebaseAuth.DefaultInstance.CreateUserAsync(userRecordArgs);
             Console.WriteLine($"Successfully created new user: {userRecord.Uid}");
-        }
+        }  
 
         private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
         {
