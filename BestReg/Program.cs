@@ -11,12 +11,22 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
+// Create a builder for the web application
 var builder = WebApplication.CreateBuilder(args);
 
-// Initialize Firebase
-FirebaseApp.Create(new AppOptions()
+// Load Firebase credentials from JSON file
+var firebaseCredentialsPath = builder.Configuration["Firebase:Credentials"];
+if (string.IsNullOrEmpty(firebaseCredentialsPath))
 {
-    Credential = GoogleCredential.GetApplicationDefault(),
+    throw new InvalidOperationException("Firebase credentials path not found in configuration.");
+}
+
+var credential = GoogleCredential.FromFile(firebaseCredentialsPath);
+
+// Initialize Firebase
+FirebaseApp.Create(new AppOptions
+{
+    Credential = credential,
 });
 
 // Setup database connection string
@@ -32,11 +42,11 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
-// Register the EmailService with the dependency injection container
+// Register services
 builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddSingleton<IFirebaseService, FirebaseService>();
 builder.Services.AddSingleton<SyncService>();
-builder.Services.AddSingleton<RoleSyncService>(); // Register RoleSyncService
+builder.Services.AddSingleton<RoleSyncService>();
 
 // Add Firebase Authentication services
 builder.Services.AddSingleton<IFirebaseAuthService, FirebaseAuthService>();
@@ -56,6 +66,7 @@ builder.Services.AddSingleton<FirebaseAuthClient>(sp =>
         }
     });
 });
+
 // Configure JWT Bearer for Firebase Authentication
 builder.Services.AddAuthentication(options =>
 {
