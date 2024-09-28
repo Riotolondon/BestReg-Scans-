@@ -11,22 +11,21 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-// Create a builder for the web application
 var builder = WebApplication.CreateBuilder(args);
 
 // Load Firebase credentials from JSON file
-var firebaseCredentialsPath = builder.Configuration["Firebase:Credentials"];
-if (string.IsNullOrEmpty(firebaseCredentialsPath))
+var firebaseCredentialsPath = @"C:\Users\Tyron Blankenberg\Secrets\newchilddb-firebase-adminsdk-3trwt-4a0d2002b5.json";
+
+if (!File.Exists(firebaseCredentialsPath))
 {
-    throw new InvalidOperationException("Firebase credentials path not found in configuration.");
+    throw new InvalidOperationException("Firebase credentials file not found.");
 }
 
 var credential = GoogleCredential.FromFile(firebaseCredentialsPath);
-
-// Initialize Firebase
 FirebaseApp.Create(new AppOptions
 {
     Credential = credential,
+    ProjectId = "newchilddb" // Ensure this is your Firebase project ID
 });
 
 // Setup database connection string
@@ -42,7 +41,7 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
-// Register services
+// Register custom services (FirebaseService, SyncService, etc.)
 builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddSingleton<IFirebaseService, FirebaseService>();
 builder.Services.AddSingleton<SyncService>();
@@ -52,12 +51,12 @@ builder.Services.AddSingleton<RoleSyncService>();
 builder.Services.AddSingleton<IFirebaseAuthService, FirebaseAuthService>();
 builder.Services.AddSingleton<IFirebaseTokenValidator, FirebaseTokenValidator>();
 
-// Register FirebaseAuthClient
+// Register FirebaseAuthClient for handling authentication
 builder.Services.AddSingleton<FirebaseAuthClient>(sp =>
 {
     return new FirebaseAuthClient(new FirebaseAuthConfig
     {
-        ApiKey = "AIzaSyCyJg1GUGose5LfuwjP9CuWYixhczkUZmw",
+        ApiKey = "AIzaSyCyJg1GUGose5LfuwjP9CuWYixhczkUZmw", // Secure this in production
         AuthDomain = "newchilddb.firebaseapp.com",
         Providers = new FirebaseAuthProvider[]
         {
@@ -90,6 +89,18 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
+
+// Seed the database with initial data
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<ApplicationDbContext>();
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+    await DbInitializer.InitializeAsync(context, userManager, roleManager);
+    await DbInitializer.SyncExistingUsersToFirebase(userManager);
+}
 
 // Configure the HTTP request pipeline
 if (!app.Environment.IsDevelopment())
