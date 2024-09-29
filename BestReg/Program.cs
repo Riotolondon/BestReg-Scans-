@@ -31,6 +31,8 @@ else
 // Initialize Firestore
 FirestoreDb firestoreDb = FirestoreDb.Create("newchilddb");
 
+
+
 // Register FirestoreDb with DI
 builder.Services.AddSingleton(firestoreDb);
 
