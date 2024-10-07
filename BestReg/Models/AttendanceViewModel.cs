@@ -4,7 +4,7 @@
     {
         public IEnumerable<BusDriverData> BusDriverRecords { get; set; }
         public IEnumerable<SchoolAuthorityData> SchoolAuthorityRecords { get; set; }
-        public IEnumerable<HistoricalAttendanceRecord> HistoricalRecords { get; set; } // New property
+        public IEnumerable<HistoricalAttendanceRecord> HistoricalRecords { get; set; }
     }
 
     public class BusDriverData

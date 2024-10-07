@@ -1,5 +1,4 @@
 using BestReg.Data;
-//using BestReg.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -9,11 +8,11 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Setup database connection string
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-// Configure services for DbContext and Identity
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
@@ -22,24 +21,23 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
-// Register the EmailService with the dependency injection container
-builder.Services.AddTransient<IEmailService, EmailService>();
-//builder.Services.AddSingleton<SyncService>();
-//builder.Services.AddSingleton<RoleSyncService>(); // Register RoleSyncService
 
-// Configure JWT Bearer (if still needed, remove if unnecessary)
+builder.Services.AddTransient<IEmailService, EmailService>();
+
+
+
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultScheme = IdentityConstants.ApplicationScheme; // Use Identity as default
+    options.DefaultScheme = IdentityConstants.ApplicationScheme; 
 });
 
-// Add services to the container
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
