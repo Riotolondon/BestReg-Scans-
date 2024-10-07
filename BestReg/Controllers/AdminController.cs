@@ -84,11 +84,11 @@ namespace BestReg.Controllers
 
 
 
-        public async Task<IActionResult> SyncUsers([FromServices] UserManager<ApplicationUser> userManager)
-        {
-            await DbInitializer.SyncExistingUsersToFirebase(userManager);
-            return RedirectToAction("Index", "Admin");
-        }
+        //public async Task<IActionResult> SyncUsers([FromServices] UserManager<ApplicationUser> userManager)
+        //{
+        //    await DbInitializer.SyncExistingUsersToFirebase(userManager);
+        //    return RedirectToAction("Index", "Admin");
+        //}
 
 
         public async Task<IActionResult> ViewAllAttendance()

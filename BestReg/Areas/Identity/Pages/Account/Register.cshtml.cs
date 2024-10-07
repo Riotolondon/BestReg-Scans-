@@ -27,22 +27,22 @@ namespace BestReg.Areas.Identity.Pages.Account
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailService _emailService;
-        private readonly SyncService _syncService; // Inject SyncService
+        //private readonly SyncService _syncService; // Inject SyncService
 
         public RegisterModel(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             RoleManager<IdentityRole> roleManager,
             ILogger<RegisterModel> logger,
-            IEmailService emailService,
-            SyncService syncService) // Add SyncService to constructor
+            IEmailService emailService)
+            //SyncService syncService) // Add SyncService to constructor
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
             _logger = logger;
             _emailService = emailService;
-            _syncService = syncService; // Assign SyncService
+            //_syncService = syncService; // Assign SyncService
         }
 
         [BindProperty]
@@ -163,8 +163,8 @@ namespace BestReg.Areas.Identity.Pages.Account
                     // Automatically sign in the user after registration
                     await _signInManager.SignInAsync(user, isPersistent: false);
 
-                    // Trigger data sync from SQL to Firebase
-                    await _syncService.SyncSqlToFirebaseAsync();
+                    //// Trigger data sync from SQL to Firebase
+                    //await _syncService.SyncSqlToFirebaseAsync();
 
                     return LocalRedirect(returnUrl);
                 }
